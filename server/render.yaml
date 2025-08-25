@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: milkcart-backend
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000 # Or leave empty and use process.env.PORT in your code
+      - key: GOOGLE_CLIENT_ID
+        fromGroup: google-oauth
+      - key: GOOGLE_CLIENT_SECRET
+        fromGroup: google-oauth
+      - key: FRONTEND_URL
+        value: https://milk-cart-fe.vercel.app/
+      - key: JWT_SECRET
+        fromGroup: secrets
+      - key: MONGODB_URI
+        fromGroup: database
