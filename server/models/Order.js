@@ -99,7 +99,7 @@ const orderSchema = new mongoose.Schema(
       },
     },
 
-    // Delivery Shift
+    // Delivery Shift and Scheduling
     deliveryShift: {
       type: String,
       enum: ["morning", "evening"],
@@ -111,6 +111,33 @@ const orderSchema = new mongoose.Schema(
         message:
           "Delivery shift must be either 'morning' (5:00 AM - 11:00 AM) or 'evening' (5-7 PM)",
       },
+    },
+
+    // Delivery Date - New field for dated delivery system
+    deliveryDate: {
+      type: Date,
+      required: [true, "Delivery date is required"],
+      validate: {
+        validator: function (value) {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const maxDate = new Date();
+          maxDate.setDate(today.getDate() + 7);
+          maxDate.setHours(23, 59, 59, 999);
+          
+          const deliveryDate = new Date(value);
+          deliveryDate.setHours(0, 0, 0, 0);
+          
+          return deliveryDate >= today && deliveryDate <= maxDate;
+        },
+        message: "Delivery date must be between today and 7 days from today",
+      },
+    },
+
+    // Order placement timing validation
+    orderPlacedAt: {
+      type: Date,
+      default: Date.now,
     },
 
     // Simplified Status Management

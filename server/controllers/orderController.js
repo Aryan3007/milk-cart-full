@@ -3,6 +3,7 @@ import Product from "../models/Product.js";
 import Cart from "../models/cart.js";
 import DeliveryBoy from "../models/DeliveryBoy.js";
 import UserDeliveryAssignment from "../models/UserDeliveryAssignment.js";
+import { validateDeliverySlot, getAvailableDeliverySlots, getDateLabel, getDeliveryTimeSlot } from "../utils/deliveryScheduling.js";
 
 // Create a new order
 export const createOrder = async (req, res) => {
@@ -12,6 +13,7 @@ export const createOrder = async (req, res) => {
       products, // Support both 'items' and 'products' field names
       shippingAddress,
       deliveryShift,
+      deliveryDate, // New field for dated delivery
       paymentMethod = "cod", // Default to cash on delivery
       customerNotes,
       tax = 0,
@@ -30,6 +32,14 @@ export const createOrder = async (req, res) => {
         success: false,
         message:
           "Order items/products are required and must be a non-empty array",
+      });
+    }
+
+    // Validate delivery date is provided
+    if (!deliveryDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Delivery date is required",
       });
     }
 
@@ -98,13 +108,15 @@ export const createOrder = async (req, res) => {
       });
     }
 
-    // Check if order can be placed for the selected delivery shift
-    const orderTimingCheck = Order.canPlaceOrderForShift(deliveryShift);
-    if (!orderTimingCheck.canPlace) {
+    // Validate delivery date and timing using the new scheduling system
+    const deliveryValidation = validateDeliverySlot(deliveryDate, deliveryShift);
+    if (!deliveryValidation.valid) {
       return res.status(400).json({
         success: false,
-        message: orderTimingCheck.reason,
+        message: deliveryValidation.reason,
         timingRestriction: true,
+        deliveryDate,
+        deliveryShift,
       });
     }
 
@@ -207,6 +219,7 @@ export const createOrder = async (req, res) => {
       totalAmount,
       shippingAddress: processedShippingAddress,
       deliveryShift,
+      deliveryDate: new Date(deliveryDate), // Add delivery date
       paymentMethod,
       customerNotes: customerNotes || "",
       status: "pending", // Always start as pending - admin must confirm
@@ -317,6 +330,55 @@ export const createOrder = async (req, res) => {
       success: false,
       message: "Failed to create order",
       error: error.message,
+    });
+  }
+};
+
+// Get available delivery slots
+export const getDeliverySlots = async (req, res) => {
+  try {
+    const currentDateTime = new Date().toISOString();
+    
+    console.log(`[${currentDateTime}] Getting available delivery slots`);
+    
+    const availableSlots = getAvailableDeliverySlots();
+    
+    // Transform the slots to match frontend expectations
+    const formattedSlots = availableSlots.map(slot => ({
+      date: slot.date,
+      dateFormatted: getDateLabel(slot.date),
+      shifts: {
+        morning: {
+          available: slot.morning.available,
+          timeRange: getDeliveryTimeSlot('morning'),
+          cutoffPassed: slot.morning.cutoffPassed,
+          reason: slot.morning.reason,
+        },
+        // Evening is commented out per user request
+        // evening: {
+        //   available: slot.evening.available,
+        //   timeRange: getDeliveryTimeSlot('evening'),
+        //   cutoffPassed: slot.evening.cutoffPassed,
+        //   reason: slot.evening.reason,
+        // },
+      },
+    }));
+    
+    console.log(`[${currentDateTime}] Found ${formattedSlots.length} available slots`);
+    
+    res.status(200).json({
+      success: true,
+      message: "Available delivery slots retrieved",
+      slots: formattedSlots,
+      currentTime: currentDateTime,
+    });
+    
+  } catch (error) {
+    console.error("Error getting available delivery slots:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to get available delivery slots", 
+      error: error.message 
     });
   }
 };

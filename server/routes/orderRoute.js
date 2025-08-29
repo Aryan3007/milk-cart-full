@@ -23,6 +23,7 @@ import {
   getDeliveryBoyUserAssignments,
   updateUserAssignmentSequence,
   transferAllUsersToAnotherDeliveryBoy,
+  getDeliverySlots,
 } from "../controllers/orderController.js";
 import {
   isAuthenticated,
@@ -115,6 +116,7 @@ orderRouter.get(
 
 // Public routes
 orderRouter.get("/delivery-availability", getDeliveryShiftAvailability); // Check delivery shift availability
+orderRouter.get("/available-slots", getDeliverySlots); // Get available delivery slots with dates
 
 // User routes (require authentication)
 orderRouter.post("/", isAuthenticated, createOrder); // Create an order
