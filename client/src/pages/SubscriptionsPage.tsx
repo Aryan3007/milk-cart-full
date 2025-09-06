@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Calendar,
   Clock,
@@ -156,7 +156,7 @@ const SubscriptionsPage: React.FC = () => {
   });
 
   // Load subscription plans
-  const loadSubscriptionPlans = async () => {
+  const loadSubscriptionPlans = useCallback(async () => {
     setPlansLoading(true);
     try {
       const params = new URLSearchParams();
@@ -190,10 +190,10 @@ const SubscriptionsPage: React.FC = () => {
     } finally {
       setPlansLoading(false);
     }
-  };
+  }, [milkTypeFilter, durationFilter]);
 
   // Load user subscriptions
-  const loadUserSubscriptions = async () => {
+  const loadUserSubscriptions = useCallback(async () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("authToken");
@@ -219,7 +219,7 @@ const SubscriptionsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   // Load data based on active tab
   useEffect(() => {
@@ -228,7 +228,7 @@ const SubscriptionsPage: React.FC = () => {
     } else {
       loadUserSubscriptions();
     }
-  }, [activeTab, milkTypeFilter, durationFilter]);
+  }, [activeTab, milkTypeFilter, durationFilter, loadSubscriptionPlans, loadUserSubscriptions]);
 
   // Handle subscription form submission
   const handleSubscribe = async (e: React.FormEvent) => {

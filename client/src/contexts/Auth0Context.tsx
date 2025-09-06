@@ -10,7 +10,7 @@ interface Auth0ContextType {
   loginWithGoogle: () => Promise<void>;
   isAuth0Loading: boolean;
   isAuth0Authenticated: boolean;
-  auth0User: any;
+  auth0User: unknown;
   logout: () => void;
 }
 
@@ -138,3 +138,5 @@ export const useAuth0Context = () => {
   }
   return context;
 };
+
+export default Auth0Wrapper;

@@ -358,6 +358,8 @@ export class ApiService {
 
   // Legacy signup functions (not implemented in backend)
   static async sendSignupOtp(_phone: string, _name?: string) {
+    void _phone;
+    void _name;
     throw new Error(
       "Phone-based OTP signup is not implemented. Please use email signup.",
     );
@@ -369,13 +371,14 @@ export class ApiService {
     phone: string;
     otp: string;
   }) {
+    void _userData;
     throw new Error(
       "Phone-based OTP signup is not implemented. Please use email signup.",
     );
   }
 }
 
-// Google Address interface and utility function
+// Google Address interfaces
 export interface GoogleAddressFields {
   address: string;
   city: string;
@@ -385,11 +388,23 @@ export interface GoogleAddressFields {
   landmark: string;
 }
 
+interface GoogleAddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
+interface GoogleGeocodingResult {
+  address_components: GoogleAddressComponent[];
+  formatted_address: string;
+  place_id: string;
+}
+
 /**
  * Extracts the most precise address fields from Google Maps Geocoding API results.
  */
 export function extractBestGoogleAddressFields(
-  results: any[],
+  results: GoogleGeocodingResult[],
 ): GoogleAddressFields {
   // Helper to check if a result is a Plus Code
   const isPlusCode = (formatted: string) =>
@@ -397,10 +412,10 @@ export function extractBestGoogleAddressFields(
 
   // 1. Best: has postal_code and locality
   let bestResult = results.find((r) => {
-    const hasPostal = r.address_components.some((c: any) =>
+    const hasPostal = r.address_components.some((c) =>
       c.types.includes("postal_code"),
     );
-    const hasLocality = r.address_components.some((c: any) =>
+    const hasLocality = r.address_components.some((c) =>
       c.types.includes("locality"),
     );
     return hasPostal && hasLocality && !isPlusCode(r.formatted_address);
@@ -409,11 +424,11 @@ export function extractBestGoogleAddressFields(
   // 2. Fallback: has postal_code and sublocality/neighborhood/admin_area_2
   if (!bestResult) {
     bestResult = results.find((r) => {
-      const hasPostal = r.address_components.some((c: any) =>
+      const hasPostal = r.address_components.some((c) =>
         c.types.includes("postal_code"),
       );
       const hasSub = r.address_components.some(
-        (c: any) =>
+        (c) =>
           c.types.includes("sublocality") ||
           c.types.includes("sublocality_level_1") ||
           c.types.includes("neighborhood") ||
@@ -427,7 +442,7 @@ export function extractBestGoogleAddressFields(
   if (!bestResult) {
     bestResult = results.find(
       (r) =>
-        r.address_components.some((c: any) =>
+        r.address_components.some((c) =>
           c.types.includes("postal_code"),
         ) && !isPlusCode(r.formatted_address),
     );
@@ -445,44 +460,44 @@ export function extractBestGoogleAddressFields(
 
   const addressComponents = bestResult.address_components;
   const streetNumber =
-    addressComponents.find((c: any) => c.types.includes("street_number"))
+    addressComponents.find((c) => c.types.includes("street_number"))
       ?.long_name || "";
   const route =
-    addressComponents.find((c: any) => c.types.includes("route"))?.long_name ||
+    addressComponents.find((c) => c.types.includes("route"))?.long_name ||
     "";
   const sublocality =
     addressComponents.find(
-      (c: any) =>
+      (c) =>
         c.types.includes("sublocality_level_1") ||
         c.types.includes("sublocality"),
     )?.long_name || "";
   const neighborhood =
-    addressComponents.find((c: any) => c.types.includes("neighborhood"))
+    addressComponents.find((c) => c.types.includes("neighborhood"))
       ?.long_name || "";
   const adminArea2 =
-    addressComponents.find((c: any) =>
+    addressComponents.find((c) =>
       c.types.includes("administrative_area_level_2"),
     )?.long_name || "";
   const city =
-    addressComponents.find((c: any) => c.types.includes("locality"))
+    addressComponents.find((c) => c.types.includes("locality"))
       ?.long_name ||
     sublocality ||
     neighborhood ||
     adminArea2 ||
     "";
   const state =
-    addressComponents.find((c: any) =>
+    addressComponents.find((c) =>
       c.types.includes("administrative_area_level_1"),
     )?.long_name || "";
   const zipCode =
-    addressComponents.find((c: any) => c.types.includes("postal_code"))
+    addressComponents.find((c) => c.types.includes("postal_code"))
       ?.long_name || "";
   const country =
-    addressComponents.find((c: any) => c.types.includes("country"))
+    addressComponents.find((c) => c.types.includes("country"))
       ?.long_name || "";
   const landmark =
     addressComponents.find(
-      (c: any) =>
+      (c) =>
         c.types.includes("point_of_interest") ||
         c.types.includes("premise") ||
         c.types.includes("establishment") ||

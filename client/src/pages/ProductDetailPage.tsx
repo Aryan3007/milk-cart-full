@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -39,18 +39,7 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0);
   const { addToCart, isLoading: cartLoading } = useCart();
 
-  useEffect(() => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  }, []);
-
-  useEffect(() => {
-    loadProduct();
-  }, [productId]);
-
-  const loadProduct = async () => {
+  const loadProduct = useCallback(async () => {
     if (!productId) {
       navigate("/products");
       return;
@@ -59,6 +48,7 @@ export default function ProductDetailPage() {
     setIsLoading(true);
     try {
       const apiProduct: ApiProduct = await ApiService.getProductById(productId);
+
       if (apiProduct) {
         // Transform API response to match Product type
         const transformedProduct: Product = {
@@ -98,7 +88,18 @@ export default function ProductDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [productId, navigate]);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }, []);
+
+  useEffect(() => {
+    loadProduct();
+  }, [loadProduct]);
 
   const handleAddToCart = () => {
     if (product) {

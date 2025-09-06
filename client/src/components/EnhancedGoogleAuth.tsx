@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { AlertCircle, CheckCircle, RefreshCw, Loader2 } from "lucide-react";
+import { AlertCircle, RefreshCw, Loader2 } from "lucide-react";
 
 interface EnhancedGoogleAuthProps {
-  onSuccess?: (user: any) => void;
+  onSuccess?: (user: unknown) => void;
   onError?: (error: string) => void;
   text?: string;
   disabled?: boolean;
@@ -41,14 +41,34 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
   const BACKEND_URL =
     import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api/v1";
 
-  // Initialize Google Identity Services for client-side mode
-  useEffect(() => {
-    if (mode === "client" && !isGoogleServicesLoaded) {
-      initializeGoogleServices();
-    }
-  }, [mode, isGoogleServicesLoaded]);
+  const setupGoogleAuth = useCallback(() => {
+    try {
+      if (
+        !window.google ||
+        !window.google.accounts ||
+        !window.google.accounts.id
+      ) {
+        throw new Error("Google Identity Services not available");
+      }
 
-  const initializeGoogleServices = async () => {
+      // Initialize Google OAuth
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        context: "signin",
+        itp_support: true,
+      });
+
+      console.log("✅ Google OAuth initialized successfully");
+    } catch (error) {
+      console.error("❌ Error setting up Google auth:", error);
+      setGoogleServicesError("Failed to setup Google authentication");
+    }
+  }, [GOOGLE_CLIENT_ID, handleGoogleCredentialResponse]);
+
+  const initializeGoogleServices = useCallback(async () => {
     try {
       // Check if Google Client ID is configured
       if (!GOOGLE_CLIENT_ID) {
@@ -94,36 +114,16 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
       console.error("❌ Error initializing Google services:", error);
       setGoogleServicesError("Failed to initialize Google authentication");
     }
-  };
+  }, [GOOGLE_CLIENT_ID, setupGoogleAuth]);
 
-  const setupGoogleAuth = () => {
-    try {
-      if (
-        !window.google ||
-        !window.google.accounts ||
-        !window.google.accounts.id
-      ) {
-        throw new Error("Google Identity Services not available");
-      }
-
-      // Initialize Google OAuth
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        context: "signin",
-        itp_support: true,
-      });
-
-      console.log("✅ Google OAuth initialized successfully");
-    } catch (error) {
-      console.error("❌ Error setting up Google auth:", error);
-      setGoogleServicesError("Failed to setup Google authentication");
+  // Initialize Google Identity Services for client-side mode
+  useEffect(() => {
+    if (mode === "client" && !isGoogleServicesLoaded) {
+      initializeGoogleServices();
     }
-  };
+  }, [mode, isGoogleServicesLoaded, initializeGoogleServices]);
 
-  const handleGoogleCredentialResponse = async (
+  const handleGoogleCredentialResponse = useCallback(async (
     response: GoogleCredentialResponse,
   ) => {
     try {
@@ -167,7 +167,7 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
           : "Failed to process Google authentication";
       onError?.(message);
     }
-  };
+  }, [onSuccess, onError, googleLogin]);
 
   const handleGoogleLogin = async () => {
     if (disabled || isGoogleAuthLoading) return;
@@ -258,7 +258,7 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
       {/* Main Google Auth Button */}
       <button
         onClick={handleGoogleLogin}
-        disabled={disabled || isLoading || hasError}
+        disabled={disabled || isLoading || Boolean(hasError)}
         className={`
           w-full flex items-center justify-center gap-3 px-4 py-3 
           border border-gray-300 dark:border-gray-600 rounded-lg 
@@ -266,7 +266,7 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
           hover:bg-gray-50 dark:hover:bg-gray-700 
           focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500
           transition-colors duration-200
-          ${disabled || isLoading || hasError ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+          ${disabled || isLoading || Boolean(hasError) ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
           ${className}
         `}
       >
@@ -350,9 +350,9 @@ declare global {
     google?: {
       accounts?: {
         id?: {
-          initialize: (config: any) => void;
+          initialize: (config: unknown) => void;
           prompt: () => void;
-          renderButton: (element: HTMLElement, config: any) => void;
+          renderButton: (element: HTMLElement, config: unknown) => void;
         };
       };
     };

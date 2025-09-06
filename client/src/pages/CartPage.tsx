@@ -36,7 +36,7 @@ export default function CartPage() {
   // Refresh cart data when component mounts
   React.useEffect(() => {
     loadCart();
-  }, []);
+  }, [loadCart]);
 
   // Handler for updating quantity
   const handleUpdateQuantity = async (

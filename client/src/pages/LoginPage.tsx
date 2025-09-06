@@ -10,7 +10,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import EnhancedGoogleAuth from "../components/EnhancedGoogleAuth";
-import { User } from "../types";
 
 const LoginPage: React.FC = () => {
   useEffect(() => {
@@ -108,7 +107,7 @@ const LoginPage: React.FC = () => {
     };
 
     handleOAuthCallback();
-  }, [searchParams, navigate]);
+  }, [searchParams, navigate, setAuthenticatedUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -163,7 +162,7 @@ const LoginPage: React.FC = () => {
     }
   };
 
-  const handleGoogleSuccess = (user: User) => {
+  const handleGoogleSuccess = (user: unknown) => {
     console.log("✅ Google authentication successful:", user);
     setSuccess("Google login successful! Redirecting...");
     setError("");

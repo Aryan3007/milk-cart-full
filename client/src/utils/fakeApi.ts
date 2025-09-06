@@ -23,18 +23,19 @@ export const fakeApi = {
   },
 
   // Auth
-  async sendOTP(phone: string): Promise<{ success: boolean; otp: string }> {
+  async sendOTP(_phone: string): Promise<{ success: boolean; otp: string }> {
+    void _phone; // Suppress unused parameter warning
     await delay(1000);
     return { success: true, otp: "123456" };
   },
 
   async verifyOTP(
-    phone: string,
+    _phone: string,
     otp: string,
   ): Promise<{ success: boolean; user?: User }> {
     await delay(800);
     if (otp === "123456") {
-      return { success: true, user: { ...mockUser, phone } };
+      return { success: true, user: { ...mockUser, phone: _phone } };
     }
     return { success: false };
   },

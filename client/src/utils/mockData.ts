@@ -169,6 +169,7 @@ export const categories = [
 
 export const mockUser = {
   id: "1",
+  userId: "1", // Backend user ID
   name: "John Doe",
   phone: "+91 98765 43210",
   email: "john.doe@example.com",

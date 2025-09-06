@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import {
   Package,
@@ -127,7 +127,6 @@ export default function OrdersPage() {
     null,
   );
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [upiTransactionId, setUpiTransactionId] = useState("");
   const [upiReference, setUpiReference] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
@@ -142,11 +141,22 @@ export default function OrdersPage() {
 
   const { user } = useAuth();
 
+  const loadData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([loadOrders(), loadUnpaidOrders()]);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [loadOrders, loadUnpaidOrders]);
+
   useEffect(() => {
     if (user) {
       loadData();
     }
-  }, [user]);
+  }, [user, loadData]);
 
   useEffect(() => {
     // Update total amount when selected orders change
@@ -175,18 +185,7 @@ export default function OrdersPage() {
     }
   }, [paymentSession, expiryTime]);
 
-  const loadData = async () => {
-    setIsLoading(true);
-    try {
-      await Promise.all([loadOrders(), loadUnpaidOrders()]);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadOrders = async () => {
+  const loadOrders = useCallback(async () => {
     if (!ApiService.isAuthenticated()) return;
 
     try {
@@ -264,9 +263,9 @@ export default function OrdersPage() {
       }
       setError("Failed to load orders. Please try again.");
     }
-  };
+  }, [user]);
 
-  const loadUnpaidOrders = async () => {
+  const loadUnpaidOrders = useCallback(async () => {
     try {
       console.log("Loading unpaid orders...");
       const response = await ApiService.getUnpaidOrders();
@@ -288,7 +287,7 @@ export default function OrdersPage() {
       console.error("Error loading unpaid orders:", error);
       setError(error.message || "Failed to fetch unpaid orders");
     }
-  };
+  }, []);
 
   const createPaymentSession = async () => {
     if (selectedOrders.length === 0) {

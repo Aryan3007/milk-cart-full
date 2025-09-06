@@ -16,7 +16,7 @@ const SimpleGoogleLogin: React.FC<SimpleGoogleLoginProps> = ({
   disabled = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { loginWithGoogle, isAuth0Loading, isAuth0Authenticated } =
+  const { loginWithGoogle, isAuth0Loading } =
     useAuth0Context();
   const { googleLogin } = useAuth();
 
