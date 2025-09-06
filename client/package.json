@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,json,css,scss,md}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write '**/*.{js,json}'"
   },
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
