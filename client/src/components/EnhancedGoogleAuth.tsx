@@ -123,51 +123,52 @@ const EnhancedGoogleAuth: React.FC<EnhancedGoogleAuthProps> = ({
     }
   }, [mode, isGoogleServicesLoaded, initializeGoogleServices]);
 
-  const handleGoogleCredentialResponse = useCallback(async (
-    response: GoogleCredentialResponse,
-  ) => {
-    try {
-      if (!response.credential) {
-        throw new Error("No credential received from Google");
+  const handleGoogleCredentialResponse = useCallback(
+    async (response: GoogleCredentialResponse) => {
+      try {
+        if (!response.credential) {
+          throw new Error("No credential received from Google");
+        }
+
+        // Decode the JWT token to get user info
+        const parts = response.credential.split(".");
+        if (parts.length !== 3) {
+          throw new Error("Invalid JWT token format");
+        }
+
+        const payload = JSON.parse(atob(parts[1]));
+        console.log("🔐 Decoded Google user data:", payload);
+
+        const googleData = {
+          googleId: payload.sub,
+          email: payload.email,
+          name: payload.name,
+          avatar: payload.picture,
+        };
+
+        // Validate required fields
+        if (!googleData.googleId || !googleData.email || !googleData.name) {
+          throw new Error("Incomplete user data from Google");
+        }
+
+        const result = await googleLogin(googleData);
+
+        if (result.success && result.user) {
+          onSuccess?.(result.user);
+        } else {
+          onError?.(result.message || "Google authentication failed");
+        }
+      } catch (error) {
+        console.error("❌ Error processing Google credential:", error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to process Google authentication";
+        onError?.(message);
       }
-
-      // Decode the JWT token to get user info
-      const parts = response.credential.split(".");
-      if (parts.length !== 3) {
-        throw new Error("Invalid JWT token format");
-      }
-
-      const payload = JSON.parse(atob(parts[1]));
-      console.log("🔐 Decoded Google user data:", payload);
-
-      const googleData = {
-        googleId: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        avatar: payload.picture,
-      };
-
-      // Validate required fields
-      if (!googleData.googleId || !googleData.email || !googleData.name) {
-        throw new Error("Incomplete user data from Google");
-      }
-
-      const result = await googleLogin(googleData);
-
-      if (result.success && result.user) {
-        onSuccess?.(result.user);
-      } else {
-        onError?.(result.message || "Google authentication failed");
-      }
-    } catch (error) {
-      console.error("❌ Error processing Google credential:", error);
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to process Google authentication";
-      onError?.(message);
-    }
-  }, [onSuccess, onError, googleLogin]);
+    },
+    [onSuccess, onError, googleLogin],
+  );
 
   const handleGoogleLogin = async () => {
     if (disabled || isGoogleAuthLoading) return;

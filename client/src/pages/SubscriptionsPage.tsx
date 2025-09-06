@@ -228,7 +228,13 @@ const SubscriptionsPage: React.FC = () => {
     } else {
       loadUserSubscriptions();
     }
-  }, [activeTab, milkTypeFilter, durationFilter, loadSubscriptionPlans, loadUserSubscriptions]);
+  }, [
+    activeTab,
+    milkTypeFilter,
+    durationFilter,
+    loadSubscriptionPlans,
+    loadUserSubscriptions,
+  ]);
 
   // Handle subscription form submission
   const handleSubscribe = async (e: React.FormEvent) => {

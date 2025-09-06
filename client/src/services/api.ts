@@ -442,9 +442,8 @@ export function extractBestGoogleAddressFields(
   if (!bestResult) {
     bestResult = results.find(
       (r) =>
-        r.address_components.some((c) =>
-          c.types.includes("postal_code"),
-        ) && !isPlusCode(r.formatted_address),
+        r.address_components.some((c) => c.types.includes("postal_code")) &&
+        !isPlusCode(r.formatted_address),
     );
   }
 
@@ -463,8 +462,7 @@ export function extractBestGoogleAddressFields(
     addressComponents.find((c) => c.types.includes("street_number"))
       ?.long_name || "";
   const route =
-    addressComponents.find((c) => c.types.includes("route"))?.long_name ||
-    "";
+    addressComponents.find((c) => c.types.includes("route"))?.long_name || "";
   const sublocality =
     addressComponents.find(
       (c) =>
@@ -479,8 +477,7 @@ export function extractBestGoogleAddressFields(
       c.types.includes("administrative_area_level_2"),
     )?.long_name || "";
   const city =
-    addressComponents.find((c) => c.types.includes("locality"))
-      ?.long_name ||
+    addressComponents.find((c) => c.types.includes("locality"))?.long_name ||
     sublocality ||
     neighborhood ||
     adminArea2 ||
@@ -490,11 +487,10 @@ export function extractBestGoogleAddressFields(
       c.types.includes("administrative_area_level_1"),
     )?.long_name || "";
   const zipCode =
-    addressComponents.find((c) => c.types.includes("postal_code"))
-      ?.long_name || "";
+    addressComponents.find((c) => c.types.includes("postal_code"))?.long_name ||
+    "";
   const country =
-    addressComponents.find((c) => c.types.includes("country"))
-      ?.long_name || "";
+    addressComponents.find((c) => c.types.includes("country"))?.long_name || "";
   const landmark =
     addressComponents.find(
       (c) =>
