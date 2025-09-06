@@ -1,4 +1,3 @@
-
 const Marquee = () => {
   return (
     <>
@@ -38,9 +37,8 @@ const Marquee = () => {
           <span className="mx-8">Jhotwara</span>
         </div>
       </div>
-
     </>
-  )
-}
+  );
+};
 
-export default Marquee
+export default Marquee;

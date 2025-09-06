@@ -17,14 +17,14 @@ userPaymentRouter.get("/unpaid-orders", isAuthenticated, getUnpaidOrders);
 userPaymentRouter.post(
   "/create-payment",
   isAuthenticated,
-  createPaymentSession
+  createPaymentSession,
 );
 
 // Mark payment as completed after user pays via UPI
 userPaymentRouter.post(
   "/:paymentId/mark-completed",
   isAuthenticated,
-  markPaymentCompleted
+  markPaymentCompleted,
 );
 
 // Get payment status by payment ID

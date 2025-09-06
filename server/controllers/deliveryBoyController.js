@@ -43,7 +43,7 @@ const generateToken = (deliveryBoyId) => {
   return jwt.sign(
     { deliveryBoyId, userType: "deliveryBoy" },
     process.env.JWT_SECRET,
-    { expiresIn: "30d" }
+    { expiresIn: "30d" },
   );
 };
 
@@ -154,7 +154,7 @@ export const registerDeliveryBoy = async (req, res) => {
     const existingDeliveryBoy = await DeliveryBoy.findOne({
       $or: [
         ...(email && email.trim() ? [{ email: email.toLowerCase() }] : []),
-        { phone: phone.trim() }
+        { phone: phone.trim() },
       ],
     });
 
@@ -228,12 +228,14 @@ export const loginDeliveryBoy = async (req, res) => {
     }
 
     // Find delivery boy by email or phone and include password field
-    const isEmail = identifier.includes('@');
-    const query = isEmail 
+    const isEmail = identifier.includes("@");
+    const query = isEmail
       ? { email: identifier.toLowerCase() }
       : { phone: identifier.trim() };
-    
-    const deliveryBoy = await DeliveryBoy.findOne(query).select("+password +loginAttempts +lockUntil");
+
+    const deliveryBoy = await DeliveryBoy.findOne(query).select(
+      "+password +loginAttempts +lockUntil",
+    );
 
     if (!deliveryBoy) {
       return res.status(401).json({
@@ -421,9 +423,8 @@ export const changeDeliveryBoyPassword = async (req, res) => {
       });
     }
 
-    const deliveryBoy = await DeliveryBoy.findById(deliveryBoyId).select(
-      "+password"
-    );
+    const deliveryBoy =
+      await DeliveryBoy.findById(deliveryBoyId).select("+password");
     if (!deliveryBoy) {
       return res.status(404).json({
         success: false,
@@ -432,9 +433,8 @@ export const changeDeliveryBoyPassword = async (req, res) => {
     }
 
     // Verify current password
-    const isCurrentPasswordValid = await deliveryBoy.comparePassword(
-      currentPassword
-    );
+    const isCurrentPasswordValid =
+      await deliveryBoy.comparePassword(currentPassword);
     if (!isCurrentPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -471,11 +471,11 @@ export const getAllDeliveryBoys = async (req, res) => {
 
     // Add search functionality
     if (search && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
+      const searchRegex = new RegExp(search.trim(), "i");
       filter.$or = [
         { name: searchRegex },
         { email: searchRegex },
-        { phone: searchRegex }
+        { phone: searchRegex },
       ];
     }
 

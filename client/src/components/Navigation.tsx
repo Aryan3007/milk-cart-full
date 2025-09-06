@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from 'react';
-import { Menu, X, Milk, User, Package, Loader2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import CartIcon from './CartIcon';
-import ThemeToggle from './ThemeToggle';
-import { useAuth } from '../contexts/AuthContext';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect, useRef } from "react";
+import { Menu, X, Milk, User, Package, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import CartIcon from "./CartIcon";
+import ThemeToggle from "./ThemeToggle";
+import { useAuth } from "../contexts/AuthContext";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 interface NavItem {
   name: string;
@@ -13,10 +13,10 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { name: 'Home', href: '/', scrollTo: '#home' },
-  { name: 'Products', href: '/products' },
-  { name: 'Subscriptions', href: '/subscriptions' },
-  { name: 'Contact', href: '/', scrollTo: '#contact' },
+  { name: "Home", href: "/", scrollTo: "#home" },
+  { name: "Products", href: "/products" },
+  { name: "Subscriptions", href: "/subscriptions" },
+  { name: "Contact", href: "/", scrollTo: "#contact" },
 ];
 
 export default function Navigation() {
@@ -28,7 +28,7 @@ export default function Navigation() {
     isLoading,
     isGoogleAuthLoading,
     googleAuthError,
-    clearGoogleAuthError
+    clearGoogleAuthError,
   } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ export default function Navigation() {
 
   // Clear Google auth error when user navigates away from login page
   useEffect(() => {
-    if (googleAuthError && location.pathname !== '/login') {
+    if (googleAuthError && location.pathname !== "/login") {
       clearGoogleAuthError();
     }
   }, [location.pathname, googleAuthError, clearGoogleAuthError]);
@@ -45,17 +45,20 @@ export default function Navigation() {
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setShowUserMenu(false);
       }
     };
 
     if (showUserMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showUserMenu]);
 
@@ -66,18 +69,18 @@ export default function Navigation() {
 
   const handleNavClick = (item: NavItem) => {
     if (item.scrollTo) {
-      if (location.pathname !== '/') {
-        navigate('/');
+      if (location.pathname !== "/") {
+        navigate("/");
         setTimeout(() => {
           const element = document.querySelector(item.scrollTo!);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            element.scrollIntoView({ behavior: "smooth" });
           }
         }, 200);
       } else {
         const element = document.querySelector(item.scrollTo);
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
+          element.scrollIntoView({ behavior: "smooth" });
         }
       }
     } else {
@@ -90,19 +93,19 @@ export default function Navigation() {
     logout();
     setShowUserMenu(false);
     setIsOpen(false);
-    navigate('/');
+    navigate("/");
   };
 
   const handleLoginClick = () => {
     if (googleAuthError) {
       clearGoogleAuthError();
     }
-    navigate('/login');
+    navigate("/login");
     setIsOpen(false);
   };
 
   const handleCartClick = () => {
-    navigate('/cart');
+    navigate("/cart");
     setIsOpen(false);
   };
 
@@ -120,9 +123,15 @@ export default function Navigation() {
       <div className="max-w-7xl bg-white/60  py-3 rounded-full shadow-lg backdrop-blur-md  mx-auto px-4 sm:px-6 lg:px-8 mt-2">
         <div className="flex justify-between items-center h-fit">
           <div className="flex items-center space-x-2">
-            <Link to="/" className="flex items-center space-x-2" aria-label="Legends Milk Cart Home">
+            <Link
+              to="/"
+              className="flex items-center space-x-2"
+              aria-label="Legends Milk Cart Home"
+            >
               <Milk className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Legends</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">
+                Legends
+              </span>
             </Link>
           </div>
 
@@ -149,7 +158,7 @@ export default function Navigation() {
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
                     className="flex items-center space-x-2 text-gray-700 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200"
-                    aria-label={`User menu for ${user?.name || 'User'}`}
+                    aria-label={`User menu for ${user?.name || "User"}`}
                     aria-expanded={showUserMenu}
                     disabled={showAuthLoading}
                   >
@@ -158,7 +167,9 @@ export default function Navigation() {
                     ) : (
                       <User size={20} />
                     )}
-                    <span className="hidden lg:block">{user?.name || 'User'}</span>
+                    <span className="hidden lg:block">
+                      {user?.name || "User"}
+                    </span>
                   </button>
 
                   <AnimatePresence>
@@ -210,7 +221,7 @@ export default function Navigation() {
                   {showAuthLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : null}
-                  <span>{showAuthLoading ? 'Loading...' : 'Login'}</span>
+                  <span>{showAuthLoading ? "Loading..." : "Login"}</span>
                 </button>
               )}
             </div>
@@ -225,7 +236,7 @@ export default function Navigation() {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-700"
-              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-label={isOpen ? "Close menu" : "Open menu"}
               aria-expanded={isOpen}
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -239,7 +250,7 @@ export default function Navigation() {
           <motion.div
             className="md:hidden bg-white/60 shadow-lg backdrop-blur-lg rounded-3xl mt-2 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800"
             initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
+            animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             role="menu"
@@ -294,7 +305,7 @@ export default function Navigation() {
                   {showAuthLoading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : null}
-                  <span>{showAuthLoading ? 'Loading...' : 'Login'}</span>
+                  <span>{showAuthLoading ? "Loading..." : "Login"}</span>
                 </button>
               )}
             </div>

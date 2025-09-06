@@ -1,26 +1,28 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   User,
   Mail,
-  MapPin,
-  Loader2,
-  Shield,
   Calendar,
-  Key,
-  UserCheck,
+  Shield,
   Edit,
+  Save,
+  X,
+  MapPin,
   Home,
   Building,
   Globe,
-  Save,
-  X,
   Navigation,
-  CheckCircle,
+  Loader2,
+  UserCheck,
+  Plus,
+  Trash2,
+  Star,
   AlertCircle,
-  Crosshair,
+  Key,
+  CheckCircle,
 } from "lucide-react";
 import { ApiService } from "../services/api";
-import { extractBestGoogleAddressFields } from "../utils/api";
+import { extractBestGoogleAddressFields } from "../services/api";
 import { errorToastHandler, successToastHandler } from "../utils/toastUtils";
 
 const AnimatedSection = ({
@@ -114,10 +116,27 @@ export default function ProfilePage() {
   });
   const [profileUpdateLoading, setProfileUpdateLoading] = useState(false);
 
-  // Helper: get the user's address (if any)
-  const userAddress =
-    user?.addresses && user.addresses.length > 0 ? user.addresses[0] : null;
+  // Address management state
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(
+    null,
+  );
   const [editing, setEditing] = useState(false);
+  const [addingNew, setAddingNew] = useState(false);
+
+  // Helper: get the user's addresses
+  const userAddresses = useMemo(() => user?.addresses || [], [user?.addresses]);
+  const selectedAddress = selectedAddressId
+    ? userAddresses.find((addr) => addr._id === selectedAddressId)
+    : userAddresses.find((addr) => addr.isDefault) || userAddresses[0] || null;
+
+  // Auto-select first address on user load
+  useEffect(() => {
+    if (user && userAddresses.length > 0 && !selectedAddressId) {
+      const defaultAddr =
+        userAddresses.find((addr) => addr.isDefault) || userAddresses[0];
+      setSelectedAddressId(defaultAddr._id);
+    }
+  }, [user, userAddresses, selectedAddressId]);
 
   useEffect(() => {
     window.scrollTo({
@@ -161,7 +180,7 @@ export default function ProfilePage() {
             timeout: 15000,
             maximumAge: 30000,
           });
-        }
+        },
       );
 
       const { latitude, longitude } = position.coords;
@@ -173,7 +192,7 @@ export default function ProfilePage() {
         const googleResponse = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-          }&language=en`
+          }&language=en`,
         );
 
         if (googleResponse.ok) {
@@ -224,7 +243,7 @@ export default function ProfilePage() {
       if (!locationData) {
         try {
           const osmResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=en&zoom=18`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=en&zoom=18`,
           );
 
           if (osmResponse.ok) {
@@ -265,7 +284,7 @@ export default function ProfilePage() {
           latitude,
           longitude,
           address: `Location at ${latitude.toFixed(6)}, ${longitude.toFixed(
-            6
+            6,
           )}`,
           city: "",
           state: "",
@@ -281,17 +300,17 @@ export default function ProfilePage() {
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setLocationError(
-              "Location access denied. Please enable location services in your browser settings."
+              "Location access denied. Please enable location services in your browser settings.",
             );
             break;
           case error.POSITION_UNAVAILABLE:
             setLocationError(
-              "Location information unavailable. Please check your GPS settings and try again."
+              "Location information unavailable. Please check your GPS settings and try again.",
             );
             break;
           case error.TIMEOUT:
             setLocationError(
-              "Location request timed out. Please try again in a moment."
+              "Location request timed out. Please try again in a moment.",
             );
             break;
           default:
@@ -299,7 +318,7 @@ export default function ProfilePage() {
         }
       } else {
         setLocationError(
-          "Failed to get address from location. You can still enter your address manually below."
+          "Failed to get address from location. You can still enter your address manually below.",
         );
       }
       return null;
@@ -329,41 +348,21 @@ export default function ProfilePage() {
     }
   };
 
-  // Edit handler
-  const handleEditAddress = () => {
-    if (!userAddress) return;
-    setEditForm({
-      label: userAddress.label,
-      address: userAddress.address,
-      city: userAddress.city,
-      state: userAddress.state,
-      zipCode: userAddress.zipCode,
-      country: userAddress.country,
-      building: userAddress?.building || "",
-      flat: userAddress?.flat || "",
-      landmark: userAddress?.landmark || "",
-    });
-    setEditing(true);
-  };
-
-  // Update handler (update the only address)
+  // Update handler
   const handleUpdateAddress = async () => {
-    if (!user) return;
+    if (!user || !selectedAddress) return;
     setUpdateLoading(true);
     try {
-      const data = await ApiService.updateUserAddress(user.userId, editForm);
+      const data = await ApiService.updateUserAddress(user.userId, {
+        ...editForm,
+        isDefault: selectedAddress.isDefault, // Preserve default status when updating
+      });
       if (data.success) {
         setUser((prev) => {
           if (!prev) return null;
           return {
             ...prev,
-            addresses: [
-              {
-                ...editForm,
-                _id: userAddress?._id || data.data.addressId,
-                isDefault: true,
-              },
-            ],
+            addresses: data.data.addresses, // Use the addresses from server response
           };
         });
         setEditing(false);
@@ -379,26 +378,33 @@ export default function ProfilePage() {
     }
   };
 
-  // Add handler (add the only address)
+  // Add handler
   const handleAddAddress = async () => {
     if (!user) return;
+
+    // Check if user already has 5 addresses
+    if (userAddresses.length >= 5) {
+      errorToastHandler(
+        "Maximum of 5 addresses allowed. Please delete an existing address first.",
+      );
+      return;
+    }
+
     setUpdateLoading(true);
     try {
-      const data = await ApiService.updateUserAddress(user.userId, editForm);
+      const data = await ApiService.updateUserAddress(user.userId, {
+        ...editForm,
+        isDefault: userAddresses.length === 0, // Make first address default
+      });
       if (data.success) {
         setUser((prev) => {
           if (!prev) return null;
           return {
             ...prev,
-            addresses: [
-              {
-                ...editForm,
-                _id: data.data.addressId,
-                isDefault: true,
-              },
-            ],
+            addresses: data.data.addresses, // Use the addresses from server response
           };
         });
+        setAddingNew(false);
         setEditing(false);
         successToastHandler("Address added successfully!");
       } else {
@@ -412,17 +418,76 @@ export default function ProfilePage() {
     }
   };
 
-  const handleCancelEdit = () => {
-    setEditing(false);
-    setEditForm({
-      label: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-    });
-    setLocationError("");
+  // Delete handler
+  const handleDeleteAddress = async (addressId: string) => {
+    if (!user || userAddresses.length <= 1) {
+      errorToastHandler("You must have at least one address.");
+      return;
+    }
+
+    setUpdateLoading(true);
+    try {
+      const data = await ApiService.deleteUserAddress(user.userId, addressId);
+      if (data.success) {
+        setUser((prev) => {
+          if (!prev) return null;
+          const updatedAddresses = prev.addresses.filter(
+            (addr) => addr._id !== addressId,
+          );
+          // If deleted address was selected, select the first remaining address
+          if (selectedAddressId === addressId && updatedAddresses.length > 0) {
+            setSelectedAddressId(updatedAddresses[0]._id);
+          }
+          return {
+            ...prev,
+            addresses: updatedAddresses,
+          };
+        });
+        successToastHandler("Address deleted successfully!");
+      } else {
+        errorToastHandler(data.message || "Failed to delete address");
+      }
+    } catch (err) {
+      console.error("Error deleting address:", err);
+      errorToastHandler("Failed to delete address");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+  // Set address as default
+  const handleSetAsDefault = async (addressId: string) => {
+    if (!user) return;
+
+    const addressToUpdate = userAddresses.find(
+      (addr) => addr._id === addressId,
+    );
+    if (!addressToUpdate) return;
+
+    setUpdateLoading(true);
+    try {
+      const data = await ApiService.updateUserAddress(user.userId, {
+        ...addressToUpdate,
+        isDefault: true,
+      });
+      if (data.success) {
+        setUser((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            addresses: data.data.addresses,
+          };
+        });
+        successToastHandler("Default address updated successfully!");
+      } else {
+        errorToastHandler(data.message || "Failed to update default address");
+      }
+    } catch (err) {
+      console.error("Error setting default address:", err);
+      errorToastHandler("Failed to update default address");
+    } finally {
+      setUpdateLoading(false);
+    }
   };
 
   const handleEditProfile = () => {
@@ -440,7 +505,7 @@ export default function ProfilePage() {
     try {
       const data = await ApiService.updateProfile(
         profileForm.name,
-        profileForm.phone
+        profileForm.phone,
       );
       if (data.success) {
         setUser((prev) => {
@@ -719,40 +784,275 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-800 rounded-xl">
                         <MapPin className="w-5 h-5 text-green-600 dark:text-green-400" />
                       </div>
-                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                        Delivery Address
-                      </h2>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                          Delivery Addresses
+                        </h2>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Manage up to 5 delivery addresses (
+                          {userAddresses.length}/5)
+                        </p>
+                      </div>
                     </div>
-                    {/* {!userAddress && (
+                    {userAddresses.length < 5 && (
                       <button
-                        onClick={handleAddAddress}
-                        className="flex items-center justify-center w-full px-4 py-3 space-x-2 font-medium text-white transition-all duration-200 bg-green-600 hover:bg-green-700 rounded-xl hover:scale-105 sm:w-auto"
+                        onClick={() => {
+                          setAddingNew(true);
+                          setEditing(true);
+                          setEditForm({
+                            label: "",
+                            address: "",
+                            city: "",
+                            state: "",
+                            zipCode: "",
+                            country: "India",
+                            building: "",
+                            flat: "",
+                            landmark: "",
+                          });
+                        }}
+                        className="flex items-center justify-center px-4 py-3 space-x-2 font-medium text-white transition-all duration-200 bg-green-600 hover:bg-green-700 rounded-xl hover:scale-105"
                       >
                         <Plus size={16} />
                         <span className="text-sm">Add New Address</span>
                       </button>
-                    )} */}
-                    {/* {userAddress && !editing && (
-                      <button
-                        onClick={handleEditAddress}
-                        className="flex items-center justify-center w-full px-4 py-3 space-x-2 font-medium text-white transition-all duration-200 bg-emerald-600 hover:bg-emerald-700 rounded-xl hover:scale-105 sm:w-auto"
-                      >
-                        <Edit size={16} />
-                        <span className="text-sm">Edit Address</span>
-                      </button>
-                    )} */}
+                    )}
                   </div>
                 </div>
 
                 <div className="p-6">
-                  {!userAddress && (
+                  {/* Address Selection */}
+                  {userAddresses.length > 1 && !editing && (
+                    <div className="mb-6">
+                      <label className="block mb-3 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Select Address to View/Edit:
+                      </label>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {userAddresses.map((addr) => (
+                          <button
+                            key={addr._id}
+                            onClick={() => setSelectedAddressId(addr._id)}
+                            className={`p-3 text-left border rounded-lg transition-all ${
+                              selectedAddressId === addr._id
+                                ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                                : "border-gray-200 hover:border-gray-300 dark:border-gray-600"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {addr.label}
+                              </span>
+                              {addr.isDefault && (
+                                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                              {addr.address}, {addr.city}
+                            </p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* No Addresses State */}
+                  {userAddresses.length === 0 && !editing && (
+                    <div className="text-center py-12">
+                      <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full dark:bg-gray-700">
+                        <MapPin className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                        No Addresses Added
+                      </h3>
+                      <p className="mb-6 text-gray-600 dark:text-gray-400">
+                        Add your first delivery address to start placing orders.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setAddingNew(true);
+                          setEditing(true);
+                          setEditForm({
+                            label: "",
+                            address: "",
+                            city: "",
+                            state: "",
+                            zipCode: "",
+                            country: "India",
+                            building: "",
+                            flat: "",
+                            landmark: "",
+                          });
+                        }}
+                        className="flex items-center justify-center px-6 py-3 mx-auto space-x-2 font-medium text-white bg-green-600 rounded-lg hover:bg-green-700"
+                      >
+                        <Plus size={16} />
+                        <span>Add Your First Address</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Selected Address Display */}
+                  {selectedAddress && !editing && (
                     <div className="space-y-6">
-                      {/* Use Current Location Button */}
+                      <div className="p-6 border border-gray-200 rounded-xl dark:border-gray-600">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center mb-3 space-x-3">
+                              <div className="flex items-center justify-center w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl">
+                                <Home className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                              </div>
+                              <div>
+                                <h4 className="text-lg font-bold text-gray-900 capitalize dark:text-white">
+                                  {selectedAddress.label}
+                                </h4>
+                                <div className="flex items-center space-x-2">
+                                  {selectedAddress.isDefault && (
+                                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-200">
+                                      <Star className="w-3 h-3 mr-1 fill-current" />
+                                      Default
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 text-gray-600 dark:text-gray-300">
+                              <div className="flex items-center space-x-2">
+                                <Building className="w-4 h-4" />
+                                <span>{selectedAddress.address}</span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <MapPin className="w-4 h-4" />
+                                <span>
+                                  {selectedAddress.city},{" "}
+                                  {selectedAddress.state} -{" "}
+                                  {selectedAddress.zipCode}
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Globe className="w-4 h-4" />
+                                <span className="capitalize">
+                                  {selectedAddress.country}
+                                </span>
+                              </div>
+                              {(selectedAddress.building ||
+                                selectedAddress.flat ||
+                                selectedAddress.landmark) && (
+                                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                  <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                                    Additional Details:
+                                  </h5>
+                                  {selectedAddress.building && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      Building: {selectedAddress.building}
+                                    </p>
+                                  )}
+                                  {selectedAddress.flat && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      Flat/House: {selectedAddress.flat}
+                                    </p>
+                                  )}
+                                  {selectedAddress.landmark && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                      Landmark: {selectedAddress.landmark}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Address Actions */}
+                        <div className="flex flex-wrap gap-2 mt-6">
+                          <button
+                            onClick={() => {
+                              if (!selectedAddress) return;
+                              setEditForm({
+                                label: selectedAddress.label,
+                                address: selectedAddress.address,
+                                city: selectedAddress.city,
+                                state: selectedAddress.state,
+                                zipCode: selectedAddress.zipCode,
+                                country: selectedAddress.country,
+                                building: selectedAddress.building || "",
+                                flat: selectedAddress.flat || "",
+                                landmark: selectedAddress.landmark || "",
+                              });
+                              setAddingNew(false);
+                              setEditing(true);
+                            }}
+                            className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-emerald-600 rounded-lg hover:bg-emerald-700"
+                          >
+                            <Edit size={16} />
+                            <span>Edit</span>
+                          </button>
+
+                          {!selectedAddress.isDefault && (
+                            <button
+                              onClick={() =>
+                                handleSetAsDefault(selectedAddress._id)
+                              }
+                              disabled={updateLoading}
+                              className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              <Star size={16} />
+                              <span>Set as Default</span>
+                            </button>
+                          )}
+
+                          {userAddresses.length > 1 && (
+                            <button
+                              onClick={() =>
+                                handleDeleteAddress(selectedAddress._id)
+                              }
+                              disabled={updateLoading}
+                              className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50"
+                            >
+                              <Trash2 size={16} />
+                              <span>Delete</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Add/Edit Address Form */}
+                  {editing && (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">
+                          {addingNew ? "Add New Address" : "Edit Address"}
+                        </h4>
+                        <button
+                          onClick={() => {
+                            setEditing(false);
+                            setAddingNew(false);
+                            setEditForm({
+                              label: "",
+                              address: "",
+                              city: "",
+                              state: "",
+                              zipCode: "",
+                              country: "",
+                              building: "",
+                              flat: "",
+                              landmark: "",
+                            });
+                          }}
+                          className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-gray-500 rounded-lg hover:bg-gray-600"
+                        >
+                          <X size={16} />
+                          <span>Cancel</span>
+                        </button>
+                      </div>
+
+                      {/* Location Button */}
                       <button
                         onClick={fillFormWithLocation}
                         disabled={locationLoading}
-                        className="flex items-center justify-center w-full px-6 py-4 mb-6 text-lg font-semibold text-white transition-all duration-200 shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
-                        title="Fill address fields using your current location"
+                        className="flex items-center justify-center w-full px-6 py-4 mb-4 text-lg font-semibold text-white transition-all duration-200 shadow-lg bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-4 focus:ring-blue-300 disabled:opacity-60"
                       >
                         {locationLoading ? (
                           <Loader2 className="w-6 h-6 mr-2 animate-spin" />
@@ -762,296 +1062,22 @@ export default function ProfilePage() {
                         <span>
                           {locationLoading
                             ? "Getting Location..."
-                            : "Update from Current Location"}
+                            : "Use Current Location"}
                         </span>
                       </button>
+
                       {locationError && (
-                        <div className="flex items-center mt-2 space-x-2 text-red-600 dark:text-red-400">
+                        <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
                           <AlertCircle className="w-4 h-4" />
                           <span className="text-sm">{locationError}</span>
                         </div>
                       )}
-                      {/* Location Fetching Section */}
-                      <div className="p-6 border border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700 rounded-xl">
-                        <div className="flex items-start space-x-4">
-                          <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 bg-blue-100 dark:bg-blue-800 rounded-xl">
-                            <Crosshair className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                              📍 Get Current Location
-                            </h3>
-                            <p className="mb-4 text-gray-600 dark:text-gray-300">
-                              Allow us to automatically fill your address using
-                              your current location. This is the fastest and
-                              most accurate way to add your address.
-                            </p>
-                            {locationError && (
-                              <div className="flex items-center mt-3 space-x-2 text-red-600 dark:text-red-400">
-                                <AlertCircle className="w-4 h-4" />
-                                <span className="text-sm">{locationError}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
 
-                      {/* Manual Entry Section */}
-                      <div className="p-6 border border-gray-200 bg-gray-50 dark:bg-gray-700/50 dark:border-gray-600 rounded-xl">
-                        <div className="flex items-start space-x-4">
-                          <div className="flex items-center justify-center flex-shrink-0 w-12 h-12 bg-gray-100 dark:bg-gray-600 rounded-xl">
-                            <Edit className="w-6 h-6 text-gray-600 dark:text-gray-400" />
-                          </div>
-                          <div className="flex-1">
-                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                              ✏️ Manual Entry
-                            </h3>
-                            <p className="mb-4 text-gray-600 dark:text-gray-300">
-                              Or manually enter your address details below.
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Address Label
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.label}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    label: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="e.g., Home, Office"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Street Address
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.address}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    address: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="Enter your street address"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                City
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.city}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    city: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="Enter city name"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                State
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.state}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    state: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="Enter state name"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Zip Code
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.zipCode}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    zipCode: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="Enter zip code"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Country
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.country}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    country: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="Enter country name"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Building/Complex Name (Optional)
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.building || ""}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    building: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="e.g., ABC Tower, Green Valley"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Flat/House Number (Optional)
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.flat || ""}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    flat: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="e.g., Flat 101, House No. 45"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Nearby Landmark (Optional)
-                              </label>
-                              <input
-                                type="text"
-                                value={editForm.landmark || ""}
-                                onChange={(e) =>
-                                  setEditForm({
-                                    ...editForm,
-                                    landmark: e.target.value,
-                                  })
-                                }
-                                className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                placeholder="e.g., Near Central Park, Behind Mall"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col pt-4 space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
-                            <button
-                              onClick={handleAddAddress}
-                              disabled={updateLoading}
-                              className="flex items-center justify-center flex-1 px-6 py-3 space-x-2 font-medium text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                            >
-                              {updateLoading ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Save className="w-4 h-4" />
-                              )}
-                              <span>Save Address</span>
-                            </button>
-                            <button
-                              onClick={handleCancelEdit}
-                              className="flex items-center justify-center flex-1 px-6 py-3 space-x-2 font-medium text-white transition-colors bg-gray-500 rounded-lg hover:bg-gray-600"
-                            >
-                              <X className="w-4 h-4" />
-                              <span>Cancel</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  {userAddress && editing && (
-                    <div className="space-y-4">
-                      {/* Use Current Location Button */}
-                      <button
-                        onClick={fillFormWithLocation}
-                        disabled={locationLoading}
-                        className="flex items-center px-4 py-2 mb-4 space-x-2 font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {locationLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Navigation className="w-4 h-4" />
-                        )}
-                        <span>
-                          {locationLoading
-                            ? "Getting Location..."
-                            : "Use Current Location"}
-                        </span>
-                      </button>
-                      <div className="flex flex-col mb-4 space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-                        <h4 className="text-lg font-bold text-gray-900 dark:text-white">
-                          Edit Address
-                        </h4>
-                        <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
-                          <button
-                            onClick={handleUpdateAddress}
-                            disabled={updateLoading}
-                            className="flex items-center justify-center px-4 py-2 space-x-2 font-medium text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
-                          >
-                            {updateLoading ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <Save className="w-4 h-4" />
-                            )}
-                            <span>Save</span>
-                          </button>
-                          <button
-                            onClick={handleCancelEdit}
-                            className="flex items-center justify-center px-4 py-2 space-x-2 font-medium text-white transition-colors bg-gray-500 rounded-lg hover:bg-gray-600"
-                          >
-                            <X className="w-4 h-4" />
-                            <span>Cancel</span>
-                          </button>
-                        </div>
-                      </div>
-
+                      {/* Form Fields */}
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Label
+                            Address Label *
                           </label>
                           <input
                             type="text"
@@ -1063,13 +1089,13 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="e.g., Home, Office"
+                            placeholder="e.g., Home, Office, Mom's House"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Address
+                            Street Address *
                           </label>
                           <input
                             type="text"
@@ -1081,31 +1107,28 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="Street address"
+                            placeholder="Enter street address"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            City
+                            City *
                           </label>
                           <input
                             type="text"
                             value={editForm.city}
                             onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                city: e.target.value,
-                              })
+                              setEditForm({ ...editForm, city: e.target.value })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="City"
+                            placeholder="Enter city"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            State
+                            State *
                           </label>
                           <input
                             type="text"
@@ -1117,13 +1140,13 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="State"
+                            placeholder="Enter state"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Zip Code
+                            Zip Code *
                           </label>
                           <input
                             type="text"
@@ -1135,13 +1158,13 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="Zip code"
+                            placeholder="Enter zip code"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Country
+                            Country *
                           </label>
                           <input
                             type="text"
@@ -1153,13 +1176,13 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="Country"
+                            placeholder="Enter country"
                           />
                         </div>
 
                         <div>
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Building/Complex Name (Optional)
+                            Building/Complex (Optional)
                           </label>
                           <input
                             type="text"
@@ -1171,7 +1194,7 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="e.g., ABC Tower, Green Valley"
+                            placeholder="e.g., ABC Tower"
                           />
                         </div>
 
@@ -1183,17 +1206,14 @@ export default function ProfilePage() {
                             type="text"
                             value={editForm.flat || ""}
                             onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                flat: e.target.value,
-                              })
+                              setEditForm({ ...editForm, flat: e.target.value })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="e.g., Flat 101, House No. 45"
+                            placeholder="e.g., Flat 101"
                           />
                         </div>
 
-                        <div>
+                        <div className="sm:col-span-2">
                           <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
                             Nearby Landmark (Optional)
                           </label>
@@ -1207,63 +1227,36 @@ export default function ProfilePage() {
                               })
                             }
                             className="w-full p-3 text-gray-900 bg-white border border-gray-300 rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                            placeholder="e.g., Near Central Park, Behind Mall"
+                            placeholder="e.g., Near Central Mall"
                           />
                         </div>
                       </div>
-                    </div>
-                  )}
-                  {userAddress && !editing && (
-                    <div className="p-6">
-                      <div className="flex flex-col space-y-4 sm:flex-row sm:items-start sm:justify-between sm:space-y-0">
-                        <div className="flex-1">
-                          <div className="flex items-center mb-3 space-x-3">
-                            <div className="flex items-center justify-center w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl">
-                              <Home className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900 capitalize dark:text-white">
-                                {userAddress.label}
-                              </h4>
-                              {userAddress.isDefault && (
-                                <span className="inline-flex items-center px-3 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-200">
-                                  <UserCheck className="w-3 h-3 mr-1" />
-                                  Default Address
-                                </span>
-                              )}
-                            </div>
-                          </div>
 
-                          <div className="space-y-2 text-gray-600 dark:text-gray-300">
-                            <div className="flex items-center space-x-2">
-                              <Building className="w-4 h-4" />
-                              <span>{userAddress.address}</span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <MapPin className="w-4 h-4" />
-                              <span>
-                                {userAddress.city}, {userAddress.state} -{" "}
-                                {userAddress.zipCode}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Globe className="w-4 h-4" />
-                              <span className="capitalize">
-                                {userAddress.country}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={handleEditAddress}
-                            className="flex items-center px-4 py-2 space-x-2 text-white transition-colors rounded-lg bg-emerald-600 hover:bg-emerald-700"
-                          >
-                            <Edit size={16} />
-                            <span className="text-sm">Edit</span>
-                          </button>
-                        </div>
+                      {/* Save Button */}
+                      <div className="flex justify-end">
+                        <button
+                          onClick={
+                            addingNew ? handleAddAddress : handleUpdateAddress
+                          }
+                          disabled={
+                            updateLoading ||
+                            !editForm.label ||
+                            !editForm.address ||
+                            !editForm.city ||
+                            !editForm.state ||
+                            !editForm.zipCode
+                          }
+                          className="flex items-center px-6 py-3 space-x-2 font-medium text-white transition-colors bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-50"
+                        >
+                          {updateLoading ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Save className="w-4 h-4" />
+                          )}
+                          <span>
+                            {addingNew ? "Add Address" : "Save Changes"}
+                          </span>
+                        </button>
                       </div>
                     </div>
                   )}

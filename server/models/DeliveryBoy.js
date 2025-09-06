@@ -142,11 +142,10 @@ const deliveryBoySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for better performance
-deliveryBoySchema.index({ email: 1 });
 deliveryBoySchema.index({ phone: 1 });
 deliveryBoySchema.index({ status: 1 });
 deliveryBoySchema.index({ shift: 1 });

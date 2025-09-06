@@ -161,7 +161,7 @@ const userSubscriptionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for efficient querying
@@ -183,7 +183,7 @@ userSubscriptionSchema.virtual("progressPercentage").get(function () {
   return Math.round(
     ((this.completedDeliveries + this.skippedDeliveries) /
       this.totalDeliveries) *
-      100
+      100,
   );
 });
 
@@ -204,7 +204,7 @@ userSubscriptionSchema.methods.isActive = function () {
 // Instance method to pause subscription
 userSubscriptionSchema.methods.pauseSubscription = function (
   reason,
-  performedBy
+  performedBy,
 ) {
   this.status = "paused";
   this.subscriptionHistory.push({
@@ -228,7 +228,7 @@ userSubscriptionSchema.methods.resumeSubscription = function (performedBy) {
 // Instance method to cancel subscription
 userSubscriptionSchema.methods.cancelSubscription = function (
   reason,
-  performedBy
+  performedBy,
 ) {
   this.status = "cancelled";
   this.subscriptionHistory.push({
@@ -329,7 +329,7 @@ userSubscriptionSchema.statics.findExpiringSoon = function (days = 3) {
 
 const UserSubscription = mongoose.model(
   "UserSubscription",
-  userSubscriptionSchema
+  userSubscriptionSchema,
 );
 
 export default UserSubscription;

@@ -52,13 +52,13 @@ const userDeliveryAssignmentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for better performance
 userDeliveryAssignmentSchema.index(
   { userId: 1, isActive: 1 },
-  { unique: true, partialFilterExpression: { isActive: true } }
+  { unique: true, partialFilterExpression: { isActive: true } },
 );
 userDeliveryAssignmentSchema.index({ deliveryBoyId: 1, isActive: 1 });
 userDeliveryAssignmentSchema.index({ assignedAt: -1 });
@@ -79,7 +79,7 @@ userDeliveryAssignmentSchema.statics.getActiveAssignment = function (userId) {
 
 // Static method to get all assignments for a delivery boy
 userDeliveryAssignmentSchema.statics.getDeliveryBoyAssignments = function (
-  deliveryBoyId
+  deliveryBoyId,
 ) {
   return this.find({ deliveryBoyId, isActive: true })
     .populate("userId", "name phone")
@@ -88,5 +88,5 @@ userDeliveryAssignmentSchema.statics.getDeliveryBoyAssignments = function (
 
 export default mongoose.model(
   "UserDeliveryAssignment",
-  userDeliveryAssignmentSchema
+  userDeliveryAssignmentSchema,
 );

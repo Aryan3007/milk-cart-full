@@ -226,7 +226,7 @@ export const deleteCategory = async (req, res) => {
     const category = await Category.findByIdAndUpdate(
       id,
       { isActive: false },
-      { new: true }
+      { new: true },
     );
 
     if (!category) {

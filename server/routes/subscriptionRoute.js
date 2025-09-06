@@ -56,35 +56,35 @@ router.get("/my-subscriptions", isAuthenticated, getUserSubscriptions);
 router.get(
   "/my-subscriptions/:subscriptionId",
   isAuthenticated,
-  getUserSubscription
+  getUserSubscription,
 );
 
 // Pause subscription
 router.patch(
   "/my-subscriptions/:subscriptionId/pause",
   isAuthenticated,
-  pauseUserSubscription
+  pauseUserSubscription,
 );
 
 // Resume subscription
 router.patch(
   "/my-subscriptions/:subscriptionId/resume",
   isAuthenticated,
-  resumeUserSubscription
+  resumeUserSubscription,
 );
 
 // Cancel subscription
 router.patch(
   "/my-subscriptions/:subscriptionId/cancel",
   isAuthenticated,
-  cancelUserSubscription
+  cancelUserSubscription,
 );
 
 // Skip delivery
 router.patch(
   "/my-subscriptions/:subscriptionId/skip-delivery",
   isAuthenticated,
-  skipDelivery
+  skipDelivery,
 );
 
 // Payment routes for subscriptions
@@ -92,12 +92,12 @@ router.post("/create-payment-session", isAuthenticated, createPaymentSession);
 router.post(
   "/mark-payment-completed/:paymentId",
   isAuthenticated,
-  markSubscriptionPaymentCompleted
+  markSubscriptionPaymentCompleted,
 );
 router.get(
   "/payment-status/:paymentId",
   isAuthenticated,
-  getSubscriptionPaymentStatus
+  getSubscriptionPaymentStatus,
 );
 
 // ==============================================================
@@ -112,37 +112,61 @@ router.put("/admin/plans/:id", isAdminAuthenticated, updateSubscriptionPlan);
 router.delete("/admin/plans/:id", isAdminAuthenticated, deleteSubscriptionPlan);
 
 // Admin User Subscription Management
-router.get("/admin/user-subscriptions", isAdminAuthenticated, getAllUserSubscriptions);
-router.get("/admin/deliveries/today", isAdminAuthenticated, getDeliveriesDueToday);
+router.get(
+  "/admin/user-subscriptions",
+  isAdminAuthenticated,
+  getAllUserSubscriptions,
+);
+router.get(
+  "/admin/deliveries/today",
+  isAdminAuthenticated,
+  getDeliveriesDueToday,
+);
 router.patch(
   "/admin/user-subscriptions/:subscriptionId/complete-delivery",
   isAdminAuthenticated,
-  markDeliveryCompleted
+  markDeliveryCompleted,
 );
 router.patch(
   "/admin/user-subscriptions/:subscriptionId/payment-status",
   isAdminAuthenticated,
-  updatePaymentStatus
+  updatePaymentStatus,
 );
 
 // Admin Analytics
 router.get("/admin/analytics", isAdminAuthenticated, getSubscriptionAnalytics);
 
 // Admin Payment Verification
-router.post("/admin/verify-payment/:paymentId", isAdminAuthenticated, verifySubscriptionPayment);
-router.get("/admin/payments/pending", isAdminAuthenticated, getPendingPaymentsForVerification);
+router.post(
+  "/admin/verify-payment/:paymentId",
+  isAdminAuthenticated,
+  verifySubscriptionPayment,
+);
+router.get(
+  "/admin/payments/pending",
+  isAdminAuthenticated,
+  getPendingPaymentsForVerification,
+);
 
 // Admin Refund Request Management
 router.get("/admin/refunds", isAdminAuthenticated, getAllRefundRequests);
 router.get("/admin/refunds/:id", isAdminAuthenticated, getRefundRequestById);
-router.patch("/admin/refunds/:id/status", isAdminAuthenticated, updateRefundRequestStatus);
-router.get("/admin/refunds/analytics", isAdminAuthenticated, getRefundAnalytics);
+router.patch(
+  "/admin/refunds/:id/status",
+  isAdminAuthenticated,
+  updateRefundRequestStatus,
+);
+router.get(
+  "/admin/refunds/analytics",
+  isAdminAuthenticated,
+  getRefundAnalytics,
+);
 
 // Only accessible by admin
 router.get(
   "/pending-approval",
   isAdminAuthenticated, // ensure only admin can access
-  getPendingApprovalSubscriptions
+  getPendingApprovalSubscriptions,
 );
 
 export default router;

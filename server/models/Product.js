@@ -96,7 +96,7 @@ const ProductSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for better performance

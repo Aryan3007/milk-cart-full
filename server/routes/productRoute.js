@@ -24,24 +24,24 @@ const productRouter = express.Router();
 productRouter.get(
   "/admin/products",
   isAdminAuthenticated,
-  getAllProductsForAdmin
+  getAllProductsForAdmin,
 ); // Get all products for admin
 productRouter.post(
   "/admin/products",
   isAdminAuthenticated,
   upload.fields([{ name: "productImages", maxCount: 10 }]),
-  addProductForAdmin
+  addProductForAdmin,
 ); // Add product for admin with images
 productRouter.put(
   "/admin/products/:id",
   isAdminAuthenticated,
   upload.fields([{ name: "productImages", maxCount: 10 }]),
-  updateProductForAdmin
+  updateProductForAdmin,
 ); // Update product for admin with images
 productRouter.delete(
   "/admin/products/:id",
   isAdminAuthenticated,
-  deleteProductForAdmin
+  deleteProductForAdmin,
 ); // Delete product for admin
 
 // Buyer routes
@@ -53,7 +53,7 @@ productRouter.patch("/products/:id/stock", updateStock); // Update product stock
 productRouter.patch(
   "/products/:id/ratings",
   isAuthenticated,
-  addOrUpdateRating
+  addOrUpdateRating,
 ); // Add rating (requires auth)
 
 export default productRouter;

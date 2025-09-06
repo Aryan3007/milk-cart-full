@@ -25,7 +25,7 @@ export const initiateGoogleAuth = async (req, res) => {
     } else {
       // For development, use dynamic construction
       redirectUri = `${req.protocol}://${req.get(
-        "host"
+        "host",
       )}/api/v1/google-auth/callback`;
     }
 
@@ -77,7 +77,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:5173"
-        }/login?error=oauth_error`
+        }/login?error=oauth_error`,
       );
     }
 
@@ -86,7 +86,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:5173"
-        }/login?error=no_code`
+        }/login?error=no_code`,
       );
     }
 
@@ -106,7 +106,7 @@ export const handleGoogleCallback = async (req, res) => {
         `https://api.legendsmilkcart.in/api/v1/google-auth/callback`;
     } else {
       redirectUri = `${req.protocol}://${req.get(
-        "host"
+        "host",
       )}/api/v1/google-auth/callback`;
     }
 
@@ -117,7 +117,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:5173"
-        }/login?error=config_error`
+        }/login?error=config_error`,
       );
     }
 
@@ -142,7 +142,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:5173"
-        }/login?error=token_error`
+        }/login?error=token_error`,
       );
     }
 
@@ -155,7 +155,7 @@ export const handleGoogleCallback = async (req, res) => {
         headers: {
           Authorization: `Bearer ${tokenData.access_token}`,
         },
-      }
+      },
     );
 
     const googleUser = await userResponse.json();
@@ -165,7 +165,7 @@ export const handleGoogleCallback = async (req, res) => {
       return res.redirect(
         `${
           process.env.FRONTEND_URL || "http://localhost:5173"
-        }/login?error=userinfo_error`
+        }/login?error=userinfo_error`,
       );
     }
 
@@ -199,7 +199,7 @@ export const handleGoogleCallback = async (req, res) => {
     res.redirect(
       `${
         process.env.FRONTEND_URL || "http://localhost:5173"
-      }/login?error=callback_error`
+      }/login?error=callback_error`,
     );
   }
 };

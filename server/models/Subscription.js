@@ -64,7 +64,7 @@ const subscriptionSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for efficient querying

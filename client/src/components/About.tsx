@@ -1,29 +1,32 @@
-import { motion } from 'framer-motion';
-import { Users, Award, Heart, Truck } from 'lucide-react';
-import AnimatedSection from './AnimatedSection';
-import { legendsBuffaloMilk, membershipMilk } from '../assets/cartImages'
+import { motion } from "framer-motion";
+import { Users, Award, Heart, Truck } from "lucide-react";
+import AnimatedSection from "./AnimatedSection";
+import { legendsBuffaloMilk, membershipMilk } from "../assets/cartImages";
 
 const features = [
   {
     icon: Users,
-    title: '100% Pure & Unadulterated',
-    description: 'No mixing, no preservatives — just real, farm-fresh dairy.'
+    title: "100% Pure & Unadulterated",
+    description: "No mixing, no preservatives — just real, farm-fresh dairy.",
   },
   {
     icon: Award,
-    title: 'Hygienic Glass Bottles & Utensils',
-    description: 'All glass containers are thoroughly cleaned and sterilized to ensure they are bacteria-free and safe for reuse.'
+    title: "Hygienic Glass Bottles & Utensils",
+    description:
+      "All glass containers are thoroughly cleaned and sterilized to ensure they are bacteria-free and safe for reuse.",
   },
   {
     icon: Heart,
-    title: 'Handled with Care at Every Step',
-    description: 'From milking to bottling, our process is closely monitored to maintain the highest hygiene and safety standards.'
+    title: "Handled with Care at Every Step",
+    description:
+      "From milking to bottling, our process is closely monitored to maintain the highest hygiene and safety standards.",
   },
   {
     icon: Truck,
-    title: 'Plastic-Free, Sustainable Packaging',
-    description: 'We say no to single-use plastics and yes to glass — better for the environment and your health.'
-  }
+    title: "Plastic-Free, Sustainable Packaging",
+    description:
+      "We say no to single-use plastics and yes to glass — better for the environment and your health.",
+  },
 ];
 
 export default function About() {
@@ -38,17 +41,20 @@ export default function About() {
                   Our Story of Authenticity
                 </h2>
                 <p className="text-lg text-gray-600 dark:text-gray-300 mb-6">
-                  We’re a new-age dairy brand built with a clear mission —
-                  to bring 100% pure, unadulterated dairy products from our farm to your family in the most honest and hygienic way possible.
-
+                  We’re a new-age dairy brand built with a clear mission — to
+                  bring 100% pure, unadulterated dairy products from our farm to
+                  your family in the most honest and hygienic way possible.
                 </p>
                 <p className="text-lg text-gray-600 dark:text-gray-300">
-                  We don’t cut corners. Every product is packed in glass bottles and utensils that are thoroughly washed and made bacteria-free through strict sterilization processes — not just for freshness, but for your family’s health and peace of mind.
-
+                  We don’t cut corners. Every product is packed in glass bottles
+                  and utensils that are thoroughly washed and made bacteria-free
+                  through strict sterilization processes — not just for
+                  freshness, but for your family’s health and peace of mind.
                 </p>
                 <p className="text-lg text-gray-600 dark:text-gray-300">
-                  We combine traditional farming values with modern hygiene practices and testing, ensuring that what reaches your doorstep is safe, sustainable, and truly pure.
-
+                  We combine traditional farming values with modern hygiene
+                  practices and testing, ensuring that what reaches your
+                  doorstep is safe, sustainable, and truly pure.
                 </p>
               </div>
 

@@ -85,7 +85,7 @@ const paymentSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Index for efficient queries
@@ -116,7 +116,7 @@ paymentSchema.statics.generateReferenceNumber = function () {
 // Instance method to mark payment as completed
 paymentSchema.methods.markAsCompleted = function (
   upiTransactionId,
-  upiReferenceNumber
+  upiReferenceNumber,
 ) {
   this.paymentStatus = "completed";
   this.paymentDate = new Date();

@@ -11,12 +11,12 @@ const adminDashboardRouter = express.Router();
 adminDashboardRouter.get(
   "/dashboard",
   isAdminAuthenticated,
-  getDashboardMetrics
+  getDashboardMetrics,
 );
 adminDashboardRouter.get(
   "/report-summary",
   isAdminAuthenticated,
-  getReportSummary
+  getReportSummary,
 );
 
 export default adminDashboardRouter;

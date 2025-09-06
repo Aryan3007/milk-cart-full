@@ -284,7 +284,7 @@ export const seedSubscriptions = async () => {
     const existingCount = await Subscription.countDocuments();
     if (existingCount > 0) {
       console.log(
-        `⚠️  ${existingCount} subscription plans already exist. Skipping seeding.`
+        `⚠️  ${existingCount} subscription plans already exist. Skipping seeding.`,
       );
       return;
     }
@@ -292,7 +292,7 @@ export const seedSubscriptions = async () => {
     // Insert all subscription plans
     const insertedPlans = await Subscription.insertMany(processedPlans);
     console.log(
-      `✅ Successfully seeded ${insertedPlans.length} subscription plans`
+      `✅ Successfully seeded ${insertedPlans.length} subscription plans`,
     );
 
     // Log some sample plans

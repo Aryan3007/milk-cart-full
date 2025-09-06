@@ -7,7 +7,11 @@ import React, {
 } from "react";
 import { CartState, CartItem, Product } from "../types";
 import ApiService from "../services/api";
-import { warningToastHandler, successToastHandler, errorToastHandler } from "../utils/toastUtils";
+import {
+  warningToastHandler,
+  successToastHandler,
+  errorToastHandler,
+} from "../utils/toastUtils";
 
 interface CartContextType extends CartState {
   addToCart: (product: Product, quantity?: number) => void;
@@ -29,7 +33,7 @@ type CartAction =
 
 const cartReducer = (
   state: CartState & { isLoading: boolean },
-  action: CartAction
+  action: CartAction,
 ): CartState & { isLoading: boolean } => {
   switch (action.type) {
     case "CLEAR_CART":
@@ -39,7 +43,7 @@ const cartReducer = (
       const items = action.payload;
       const total = items.reduce(
         (sum, item) => sum + item.product.price * item.quantity,
-        0
+        0,
       );
       const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
       return { ...state, items, total, itemCount };
@@ -52,30 +56,30 @@ const cartReducer = (
       const updatedItems = state.items.map((item) =>
         item.product.id === action.productId
           ? { ...item, quantity: action.quantity }
-          : item
+          : item,
       );
       const total = updatedItems.reduce(
         (sum, item) => sum + item.product.price * item.quantity,
-        0
+        0,
       );
       const itemCount = updatedItems.reduce(
         (sum, item) => sum + item.quantity,
-        0
+        0,
       );
       return { ...state, items: updatedItems, total, itemCount };
     }
 
     case "REMOVE_ITEM": {
       const updatedItems = state.items.filter(
-        (item) => item.product.id !== action.productId
+        (item) => item.product.id !== action.productId,
       );
       const total = updatedItems.reduce(
         (sum, item) => sum + item.product.price * item.quantity,
-        0
+        0,
       );
       const itemCount = updatedItems.reduce(
         (sum, item) => sum + item.quantity,
-        0
+        0,
       );
       return { ...state, items: updatedItems, total, itemCount };
     }
@@ -119,7 +123,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       try {
         for (const [itemId, quantity] of updates) {
           const cartItem = state.items.find(
-            (item) => item.product.id === itemId
+            (item) => item.product.id === itemId,
           );
           if (!cartItem?.itemId) continue;
 
@@ -152,7 +156,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       try {
         for (const [itemId, quantity] of updates) {
           const cartItem = state.items.find(
-            (item) => item.product.id === itemId
+            (item) => item.product.id === itemId,
           );
           if (!cartItem?.itemId) continue;
 
@@ -170,7 +174,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return;
         }
       }
-    }, 2000)
+    }, 2000),
   ).current;
 
   // Function to force immediate sync with backend
@@ -228,7 +232,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             },
             quantity: item.quantity,
             itemId: item._id,
-          })
+          }),
         );
 
         dispatch({ type: "LOAD_CART", payload: cartItems });
@@ -287,7 +291,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       await forceSyncWithBackend();
 
       const cartItem = state.items.find(
-        (item) => item.product.id === productId
+        (item) => item.product.id === productId,
       );
       if (!cartItem?.itemId) return;
 

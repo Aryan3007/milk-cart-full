@@ -18,7 +18,7 @@ export const getDashboardMetrics = async (req, res) => {
       23,
       59,
       59,
-      999
+      999,
     );
 
     // Today's Orders
@@ -28,10 +28,10 @@ export const getDashboardMetrics = async (req, res) => {
 
     const todaysOrdersCount = todaysOrders.length;
     const acceptedToday = todaysOrders.filter(
-      (order) => order.status === "confirmed" || order.status === "approved"
+      (order) => order.status === "confirmed" || order.status === "approved",
     ).length;
     const pendingToday = todaysOrders.filter(
-      (order) => order.status === "pending"
+      (order) => order.status === "pending",
     ).length;
 
     // Monthly Revenue (from 1st to end of current month)
@@ -42,7 +42,7 @@ export const getDashboardMetrics = async (req, res) => {
 
     const monthlyRevenue = monthlyOrders.reduce(
       (sum, order) => sum + (order.totalAmount || 0),
-      0
+      0,
     );
 
     // Total Users
@@ -79,44 +79,44 @@ export const getDashboardMetrics = async (req, res) => {
 
     // Payment Analytics
     const pendingPayments = await Payment.countDocuments({
-      paymentStatus: 'completed',
-      verificationStatus: 'pending'
+      paymentStatus: "completed",
+      verificationStatus: "pending",
     });
 
     const todaysPayments = await Payment.find({
       createdAt: { $gte: startOfDay, $lte: endOfDay },
-      paymentStatus: 'completed'
+      paymentStatus: "completed",
     });
 
     const todaysPaymentAmount = todaysPayments.reduce(
       (sum, payment) => sum + (payment.totalAmount || 0),
-      0
+      0,
     );
 
     const monthlyPayments = await Payment.find({
       createdAt: { $gte: startOfMonth, $lte: endOfMonth },
-      paymentStatus: 'completed',
-      verificationStatus: 'verified'
+      paymentStatus: "completed",
+      verificationStatus: "verified",
     });
 
     const monthlyPaymentAmount = monthlyPayments.reduce(
       (sum, payment) => sum + (payment.totalAmount || 0),
-      0
+      0,
     );
 
     const pendingPaymentAmount = await Payment.aggregate([
       {
         $match: {
-          paymentStatus: 'completed',
-          verificationStatus: 'pending'
-        }
+          paymentStatus: "completed",
+          verificationStatus: "pending",
+        },
       },
       {
         $group: {
           _id: null,
-          totalAmount: { $sum: '$totalAmount' }
-        }
-      }
+          totalAmount: { $sum: "$totalAmount" },
+        },
+      },
     ]);
 
     const totalPendingAmount = pendingPaymentAmount[0]?.totalAmount || 0;
@@ -139,7 +139,7 @@ export const getDashboardMetrics = async (req, res) => {
           todaysPaymentAmount,
           monthlyPaymentCount: monthlyPayments.length,
           monthlyPaymentAmount,
-          totalPendingAmount
+          totalPendingAmount,
         },
         monthInfo: {
           startDate: startOfMonth.toISOString(),
@@ -179,7 +179,7 @@ export const getReportSummary = async (req, res) => {
     });
     const totalOrders = orders.length;
     const cancelledOrders = orders.filter(
-      (o) => o.status === "cancelled"
+      (o) => o.status === "cancelled",
     ).length;
     const totalRevenue = orders
       .filter((o) => o.status !== "cancelled")
@@ -210,7 +210,7 @@ export const getReportSummary = async (req, res) => {
 
       const dayRevenue = dayOrders.reduce(
         (sum, order) => sum + (order.totalAmount || 0),
-        0
+        0,
       );
 
       revenueTrend.push({

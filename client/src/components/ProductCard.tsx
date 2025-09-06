@@ -1,26 +1,32 @@
-import { useState } from 'react';
-import { ShoppingBag, Leaf, X, LogIn } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { Product } from '../types';
-import { useCart } from '../contexts/CartContext';
+import { useState } from "react";
+import { ShoppingBag, Leaf, X, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Product } from "../types";
+import { useCart } from "../contexts/CartContext";
 
 // Mock product for demo
 const mockProduct: Product = {
-  id: '1',
-  name: 'Pure Cow Milk',
-  description: '100% pure & unprocessed A2 milk from healthy desi cows',
+  id: "1",
+  name: "Pure Cow Milk",
+  description: "100% pure & unprocessed A2 milk from healthy desi cows",
   price: 60,
-  image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop',
-  hoverImage: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop',
-  badges: ['A2 Milk', 'Fresh Daily'],
-  category: 'milk',
+  image:
+    "https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop",
+  hoverImage:
+    "https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=400&h=300&fit=crop",
+  badges: ["A2 Milk", "Fresh Daily"],
+  category: "milk",
   stock: 100,
   rating: 5,
   reviews: 10,
-  unit: 'Litre',
+  unit: "Litre",
 };
 
-export default function ProductCard({ product = mockProduct }: { product?: Product }) {
+export default function ProductCard({
+  product = mockProduct,
+}: {
+  product?: Product;
+}) {
   const [isHovered, setIsHovered] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [feedback, setFeedback] = useState("");
@@ -30,7 +36,7 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
   const { addToCart } = useCart();
 
   // Helper to get auth token (adjust if you use context)
-  const getToken = () => localStorage.getItem('authToken');
+  const getToken = () => localStorage.getItem("authToken");
 
   const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -47,21 +53,20 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
     setFeedback("");
     try {
       await addToCart(product, quantity);
-      setFeedback('Added to cart!');
+      setFeedback("Added to cart!");
       // Reset quantity after successful add
       setQuantity(1);
     } catch (error) {
-      setFeedback('Error adding to cart');
-      console.error('Add to cart error:', error);
+      setFeedback("Error adding to cart");
+      console.error("Add to cart error:", error);
     } finally {
       setIsLocalLoading(false);
-      setTimeout(() => setFeedback(''), 2000);
+      setTimeout(() => setFeedback(""), 2000);
     }
   };
 
-
-
-  const displayImage = isHovered && product.hoverImage ? product.hoverImage : product.image;
+  const displayImage =
+    isHovered && product.hoverImage ? product.hoverImage : product.image;
 
   return (
     <Link to={`/product/${product.id}`}>
@@ -75,7 +80,7 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
           <img
             src={displayImage}
             alt={product.name}
-            className={`object-cover w-full h-full transition-all duration-500 ${isHovered ? 'scale-110' : 'scale-100'}`}
+            className={`object-cover w-full h-full transition-all duration-500 ${isHovered ? "scale-110" : "scale-100"}`}
           />
 
           {/* Gradient Overlay */}
@@ -93,8 +98,6 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
             ))}
           </div> */}
 
-
-
           {/* Stock Status */}
           {/* {product.stock <= 5 && (
             <div className="absolute bottom-3 left-3">
@@ -107,7 +110,6 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
 
         {/* Product Details */}
         <div className="p-5">
-
           {/* Product Name */}
           <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem] group-hover:text-emerald-600 transition-colors">
             {product.name}
@@ -132,31 +134,45 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
             </div>
           </div>
 
-
-
           {/* Add to Cart Button */}
           <div className="flex gap-2 mb-4">
             <button
-              onClick={e => { e.stopPropagation(); e.preventDefault(); setQuantity(q => Math.max(1, q - 1)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setQuantity((q) => Math.max(1, q - 1));
+              }}
               className="px-2 py-1 bg-gray-100 rounded-l-lg border border-r-0 border-gray-300 text-lg font-bold disabled:opacity-50"
               disabled={quantity <= 1 || isLocalLoading}
               aria-label="Decrease quantity"
-            >-</button>
+            >
+              -
+            </button>
             <input
               type="number"
               min={1}
               max={product.stock}
               value={quantity}
-              onChange={e => setQuantity(Math.max(1, Math.min(product.stock, Number(e.target.value))))}
+              onChange={(e) =>
+                setQuantity(
+                  Math.max(1, Math.min(product.stock, Number(e.target.value))),
+                )
+              }
               className="w-12 text-center border-t border-b border-gray-300 focus:outline-none"
               disabled={isLocalLoading}
             />
             <button
-              onClick={e => { e.stopPropagation(); e.preventDefault(); setQuantity(q => Math.min(product.stock, q + 1)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setQuantity((q) => Math.min(product.stock, q + 1));
+              }}
               className="px-2 py-1 bg-gray-100 rounded-r-lg border border-l-0 border-gray-300 text-lg font-bold disabled:opacity-50"
               disabled={quantity >= product.stock || isLocalLoading}
               aria-label="Increase quantity"
-            >+</button>
+            >
+              +
+            </button>
           </div>
           <button
             onClick={handleAddToCart}
@@ -173,19 +189,25 @@ export default function ProductCard({ product = mockProduct }: { product?: Produ
                 <span>Out of Stock</span>
               ) : (
                 <>
-                  <ShoppingBag className='md:block hidden' size={18} />
-                  <span className='md:text-base text-sm px-4'>Add to Cart ₹{(product.price * quantity).toFixed(2)}</span>
+                  <ShoppingBag className="md:block hidden" size={18} />
+                  <span className="md:text-base text-sm px-4">
+                    Add to Cart ₹{(product.price * quantity).toFixed(2)}
+                  </span>
                 </>
               )}
             </div>
           </button>
-          {feedback && <div className="text-center text-sm mt-2 text-emerald-600">{feedback}</div>}
-
-
+          {feedback && (
+            <div className="text-center text-sm mt-2 text-emerald-600">
+              {feedback}
+            </div>
+          )}
         </div>
 
         {/* Hover Effect Border */}
-        <div className={`absolute inset-0 border-2 border-emerald-400 rounded-2xl transition-opacity duration-300 pointer-events-none ${isHovered ? 'opacity-100' : 'opacity-0'}`}></div>
+        <div
+          className={`absolute inset-0 border-2 border-emerald-400 rounded-2xl transition-opacity duration-300 pointer-events-none ${isHovered ? "opacity-100" : "opacity-0"}`}
+        ></div>
       </div>
 
       {/* Login Popup */}

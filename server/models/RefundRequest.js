@@ -55,32 +55,32 @@ const refundRequestSchema = new mongoose.Schema(
       // UPI Details
       upiId: {
         type: String,
-        required: function() {
+        required: function () {
           return this.refundMethod === "upi";
         },
       },
       // Bank Account Details
       accountHolderName: {
         type: String,
-        required: function() {
+        required: function () {
           return this.refundMethod === "bank_transfer";
         },
       },
       bankName: {
         type: String,
-        required: function() {
+        required: function () {
           return this.refundMethod === "bank_transfer";
         },
       },
       accountNumber: {
         type: String,
-        required: function() {
+        required: function () {
           return this.refundMethod === "bank_transfer";
         },
       },
       ifscCode: {
         type: String,
-        required: function() {
+        required: function () {
           return this.refundMethod === "bank_transfer";
         },
       },
@@ -104,7 +104,7 @@ const refundRequestSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for efficient querying
@@ -112,15 +112,21 @@ refundRequestSchema.index({ userId: 1, status: 1 });
 refundRequestSchema.index({ status: 1 });
 
 // Validate that either UPI or bank details are provided based on refundMethod
-refundRequestSchema.pre("save", function(next) {
+refundRequestSchema.pre("save", function (next) {
   if (this.refundMethod === "upi" && !this.refundDetails.upiId) {
     next(new Error("UPI ID is required for UPI refund method"));
-  } else if (this.refundMethod === "bank_transfer" && 
-    (!this.refundDetails.accountHolderName || 
-     !this.refundDetails.bankName || 
-     !this.refundDetails.accountNumber || 
-     !this.refundDetails.ifscCode)) {
-    next(new Error("All bank details are required for bank transfer refund method"));
+  } else if (
+    this.refundMethod === "bank_transfer" &&
+    (!this.refundDetails.accountHolderName ||
+      !this.refundDetails.bankName ||
+      !this.refundDetails.accountNumber ||
+      !this.refundDetails.ifscCode)
+  ) {
+    next(
+      new Error(
+        "All bank details are required for bank transfer refund method",
+      ),
+    );
   } else {
     next();
   }

@@ -19,7 +19,7 @@ import { useAuth } from "../contexts/AuthContext";
 import ApiService from "../services/api";
 import { Address } from "../types";
 import AnimatedSection from "../components/AnimatedSection";
-import { extractBestGoogleAddressFields } from "../utils/api";
+import { extractBestGoogleAddressFields } from "../services/api";
 import {
   warningToastHandler,
   errorToastHandler,
@@ -73,7 +73,7 @@ export default function CheckoutPage() {
     "cod" | "online" | "wallet"
   >("cod");
   const [deliveryShift, setDeliveryShift] = useState<"morning" | "evening">(
-    "morning"
+    "morning",
   );
   const [deliveryDate, setDeliveryDate] = useState<string>("");
   const [availableSlots, setAvailableSlots] = useState<DeliverySlot[]>([]);
@@ -113,7 +113,7 @@ export default function CheckoutPage() {
         const response = await fetch(
           `${
             import.meta.env.VITE_BACKEND_URL
-          }/orders/available-slots?t=${Date.now()}`
+          }/orders/available-slots?t=${Date.now()}`,
         );
         const data = await response.json();
 
@@ -190,17 +190,16 @@ export default function CheckoutPage() {
                 name: user?.name || "Customer", // Use user name from auth context
                 phone: user?.phone || "", // Use user phone from auth context
                 addressLine1: addr.address,
-                addressLine2:
-                  addr.label === "home"
-                    ? "Home Address"
-                    : addr.label === "work"
+                addressLine2: addr.label.startsWith("home")
+                  ? "Home Address"
+                  : addr.label.startsWith("work")
                     ? "Work Address"
-                    : "",
+                    : "Other Address",
                 city: addr.city,
                 state: addr.state,
                 pincode: addr.zipCode,
                 isDefault: addr.isDefault,
-              })
+              }),
             );
 
           setAddresses(formattedAddresses);
@@ -237,7 +236,7 @@ export default function CheckoutPage() {
 
     // Find the selected delivery slot to validate availability
     const selectedSlot = availableSlots.find(
-      (slot) => slot.date === deliveryDate
+      (slot) => slot.date === deliveryDate,
     );
     if (!selectedSlot) {
       warningToastHandler("Selected delivery date is no longer available");
@@ -251,7 +250,7 @@ export default function CheckoutPage() {
         `Cannot place order: ${
           selectedSlot.shifts.morning.reason ||
           "Morning delivery slot not available"
-        }`
+        }`,
       );
       return;
     }
@@ -261,7 +260,7 @@ export default function CheckoutPage() {
       const fallbackAvailability = deliveryAvailability[deliveryShift];
       if (!fallbackAvailability.available) {
         warningToastHandler(
-          `Cannot place order: ${fallbackAvailability.reason}`
+          `Cannot place order: ${fallbackAvailability.reason}`,
         );
         return;
       }
@@ -337,35 +336,96 @@ export default function CheckoutPage() {
   const handleAddAddress = async () => {
     if (!ApiService.isAuthenticated() || !user) return;
 
-    // Enforce single address - always replace existing address
     setIsLoading(true);
     try {
+      // Check if user already has 5 addresses
+      if (addresses.length >= 5) {
+        errorToastHandler(
+          "Maximum of 5 addresses allowed. Please delete an existing address first.",
+        );
+        setIsLoading(false);
+        return;
+      }
+
+      // Generate a unique label to avoid conflicts with existing addresses
+      const generateUniqueLabel = (baseLabel: string) => {
+        const existingLabels: string[] = addresses.map((addr) => {
+          // Convert back from the display format to the actual label
+          if (addr.addressLine2 === "Home Address") return "home";
+          if (addr.addressLine2 === "Work Address") return "work";
+          return "other";
+        });
+
+        let uniqueLabel = baseLabel;
+        let counter = 1;
+
+        while (existingLabels.includes(uniqueLabel)) {
+          uniqueLabel = `${baseLabel}${counter}`;
+          counter++;
+        }
+
+        return uniqueLabel;
+      };
+
+      const uniqueLabel = generateUniqueLabel(newAddress.label);
+
       const response = await ApiService.updateUserAddress(user.userId, {
-        label: newAddress.label,
+        label: uniqueLabel,
         address: newAddress.address,
         city: newAddress.city,
         state: newAddress.state,
         zipCode: newAddress.zipCode,
         country: newAddress.country,
-        isDefault: true, // Always set as default since we only allow one address
+        isDefault: addresses.length === 0, // Only make default if this is the first address
       });
 
       if (response.success) {
         successToastHandler("Address added successfully!");
-        // Update local addresses state
-        const newAddressObj = {
-          id: response.data.addressId,
-          name: user.name,
-          addressLine1: newAddress.address,
-          addressLine2: "",
-          city: newAddress.city,
-          state: newAddress.state,
-          pincode: newAddress.zipCode,
-          phone: user.phone || "",
-          isDefault: true,
-        };
-        setAddresses([newAddressObj]);
-        setSelectedAddress(newAddressObj);
+
+        // Reload addresses from server to get the complete updated list
+        const profileResponse = await ApiService.getUserProfile();
+        if (profileResponse.success && profileResponse.data.user.addresses) {
+          const formattedAddresses: Address[] =
+            profileResponse.data.user.addresses.map(
+              (addr: {
+                _id: string;
+                label: string;
+                address: string;
+                city: string;
+                state: string;
+                zipCode: string;
+                country: string;
+                isDefault: boolean;
+              }) => ({
+                id: addr._id,
+                name: user?.name || "Customer",
+                phone: user?.phone || "",
+                addressLine1: addr.address,
+                addressLine2: addr.label.startsWith("home")
+                  ? "Home Address"
+                  : addr.label.startsWith("work")
+                    ? "Work Address"
+                    : "Other Address",
+                city: addr.city,
+                state: addr.state,
+                pincode: addr.zipCode,
+                isDefault: addr.isDefault,
+              }),
+            );
+
+          setAddresses(formattedAddresses);
+
+          // Select the newly added address
+          const newlyAddedAddress = formattedAddresses.find(
+            (addr) =>
+              addr.addressLine1 === newAddress.address &&
+              addr.city === newAddress.city,
+          );
+          if (newlyAddedAddress) {
+            setSelectedAddress(newlyAddedAddress);
+          }
+        }
+
         setShowAddressForm(false);
         setNewAddress({
           label: "home",
@@ -423,7 +483,7 @@ export default function CheckoutPage() {
             timeout: 15000,
             maximumAge: 30000,
           });
-        }
+        },
       );
 
       const { latitude, longitude } = position.coords;
@@ -435,7 +495,7 @@ export default function CheckoutPage() {
         const googleResponse = await fetch(
           `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${
             import.meta.env.VITE_GOOGLE_MAPS_API_KEY
-          }&language=en`
+          }&language=en`,
         );
 
         if (googleResponse.ok) {
@@ -486,7 +546,7 @@ export default function CheckoutPage() {
       if (!locationData) {
         try {
           const osmResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=en&zoom=18`
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&addressdetails=1&accept-language=en&zoom=18`,
           );
 
           if (osmResponse.ok) {
@@ -527,7 +587,7 @@ export default function CheckoutPage() {
           latitude,
           longitude,
           address: `Location at ${latitude.toFixed(6)}, ${longitude.toFixed(
-            6
+            6,
           )}`,
           city: "",
           state: "",
@@ -543,17 +603,17 @@ export default function CheckoutPage() {
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setLocationError(
-              "Location access denied. Please enable location services in your browser settings."
+              "Location access denied. Please enable location services in your browser settings.",
             );
             break;
           case error.POSITION_UNAVAILABLE:
             setLocationError(
-              "Location information unavailable. Please check your GPS settings and try again."
+              "Location information unavailable. Please check your GPS settings and try again.",
             );
             break;
           case error.TIMEOUT:
             setLocationError(
-              "Location request timed out. Please try again in a moment."
+              "Location request timed out. Please try again in a moment.",
             );
             break;
           default:
@@ -561,7 +621,7 @@ export default function CheckoutPage() {
         }
       } else {
         setLocationError(
-          "Failed to get address from location. You can still enter your address manually below."
+          "Failed to get address from location. You can still enter your address manually below.",
         );
       }
       return null;
@@ -653,13 +713,33 @@ export default function CheckoutPage() {
             {/* Delivery Address */}
             <AnimatedSection delay={0.1}>
               <div className="p-6 bg-white shadow-lg dark:bg-gray-800 rounded-2xl">
-                <div className="flex items-center mb-6 space-x-3">
-                  <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900">
-                    <MapPin className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900">
+                      <MapPin className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                        Delivery Address
+                      </h2>
+                      {addresses.length > 0 && (
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {addresses.length}/5 addresses saved
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Delivery Address
-                  </h2>
+                  {addresses.length > 0 &&
+                    addresses.length < 5 &&
+                    !showAddressForm && (
+                      <button
+                        onClick={() => setShowAddressForm(true)}
+                        className="flex items-center px-4 py-2 space-x-2 text-white transition-colors bg-emerald-600 rounded-lg hover:bg-emerald-700"
+                      >
+                        <Plus size={16} />
+                        <span className="text-sm">Add New</span>
+                      </button>
+                    )}
                 </div>
 
                 {addresses.length > 0 && !showAddressForm ? (
@@ -702,14 +782,42 @@ export default function CheckoutPage() {
                       </motion.div>
                     ))}
 
-                    <motion.button
+                    {addresses.length < 5 && (
+                      <motion.button
+                        onClick={() => setShowAddressForm(true)}
+                        className="flex items-center justify-center w-full p-4 space-x-2 text-gray-600 transition-colors border-2 border-gray-300 border-dashed rounded-lg dark:border-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600"
+                        whileHover={{ scale: 1.02 }}
+                      >
+                        <Plus size={20} />
+                        <span>Add New Address ({addresses.length}/5)</span>
+                      </motion.button>
+                    )}
+                    {addresses.length >= 5 && (
+                      <div className="flex items-center justify-center w-full p-4 space-x-2 text-gray-500 border-2 border-gray-200 border-dashed rounded-lg dark:border-gray-600 dark:text-gray-400">
+                        <AlertTriangle size={20} />
+                        <span>Maximum 5 addresses allowed</span>
+                      </div>
+                    )}
+                  </div>
+                ) : addresses.length === 0 && !showAddressForm ? (
+                  /* No addresses state */
+                  <div className="text-center py-8">
+                    <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full dark:bg-gray-700">
+                      <MapPin className="w-8 h-8 text-gray-400" />
+                    </div>
+                    <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
+                      No Delivery Address Found
+                    </h3>
+                    <p className="mb-6 text-gray-600 dark:text-gray-400">
+                      Add your first delivery address to continue with checkout.
+                    </p>
+                    <button
                       onClick={() => setShowAddressForm(true)}
-                      className="flex items-center justify-center w-full p-4 space-x-2 text-gray-600 transition-colors border-2 border-gray-300 border-dashed rounded-lg dark:border-gray-600 dark:text-gray-300 hover:border-emerald-500 hover:text-emerald-600"
-                      whileHover={{ scale: 1.02 }}
+                      className="flex items-center justify-center px-6 py-3 mx-auto space-x-2 font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                     >
-                      <Plus size={20} />
-                      <span>Add New Address</span>
-                    </motion.button>
+                      <Plus size={16} />
+                      <span>Add Your First Address</span>
+                    </button>
                   </div>
                 ) : (
                   /* Address Form - updated for new API structure */
@@ -857,11 +965,11 @@ export default function CheckoutPage() {
                       </div>
                     </div>
 
-                    <div className="p-3 border border-blue-200 rounded-lg bg-blue-50 dark:bg-blue-900/20 dark:border-blue-700">
-                      <p className="text-sm text-blue-800 dark:text-blue-200">
-                        📍 <strong>Note:</strong> This will be your delivery
-                        address. We support one address per account for optimal
-                        delivery management.
+                    <div className="p-3 border border-green-200 rounded-lg bg-green-50 dark:bg-green-900/20 dark:border-green-700">
+                      <p className="text-sm text-green-800 dark:text-green-200">
+                        📍 <strong>Note:</strong> You can add up to 5 delivery
+                        addresses. The first address will be set as your default
+                        address.
                       </p>
                     </div>
 
@@ -1002,15 +1110,15 @@ export default function CheckoutPage() {
                     // { id: "evening", label: "Evening Shift", desc: "5:00 PM - 7:00 PM" },
                   ].map((shift) => {
                     const selectedSlot = availableSlots.find(
-                      (slot) => slot.date === deliveryDate
+                      (slot) => slot.date === deliveryDate,
                     );
                     const isAvailable = selectedSlot
                       ? shift.id === "morning"
                         ? selectedSlot.shifts.morning.available
                         : false // Evening is commented out
-                      : deliveryAvailability?.[
+                      : (deliveryAvailability?.[
                           shift.id as keyof DeliveryAvailability
-                        ]?.available ?? true;
+                        ]?.available ?? true);
 
                     const reason = selectedSlot
                       ? shift.id === "morning"
@@ -1031,8 +1139,8 @@ export default function CheckoutPage() {
                           !isAvailable
                             ? "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 cursor-not-allowed opacity-60"
                             : deliveryShift === shift.id
-                            ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 cursor-pointer"
-                            : "border-gray-200 dark:border-gray-700 hover:border-purple-300 cursor-pointer"
+                              ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 cursor-pointer"
+                              : "border-gray-200 dark:border-gray-700 hover:border-purple-300 cursor-pointer"
                         }`}
                         whileHover={isAvailable ? { scale: 1.02 } : {}}
                       >
@@ -1042,8 +1150,8 @@ export default function CheckoutPage() {
                               !isAvailable
                                 ? "border-gray-300 bg-gray-200"
                                 : deliveryShift === shift.id
-                                ? "border-purple-500 bg-purple-500"
-                                : "border-gray-300"
+                                  ? "border-purple-500 bg-purple-500"
+                                  : "border-gray-300"
                             }`}
                           >
                             {deliveryShift === shift.id && isAvailable && (
@@ -1102,7 +1210,7 @@ export default function CheckoutPage() {
                       key={method.id}
                       onClick={() =>
                         setPaymentMethod(
-                          method.id as "cod" | "online" | "wallet"
+                          method.id as "cod" | "online" | "wallet",
                         )
                       }
                       className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
@@ -1278,7 +1386,7 @@ export default function CheckoutPage() {
                       {deliveryDate && deliveryShift
                         ? `Expected delivery: ${
                             availableSlots.find(
-                              (slot) => slot.date === deliveryDate
+                              (slot) => slot.date === deliveryDate,
                             )?.dateFormatted
                           } ${deliveryShift} shift`
                         : "Select delivery date and shift to see expected delivery"}

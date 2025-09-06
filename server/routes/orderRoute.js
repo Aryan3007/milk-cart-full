@@ -40,78 +40,78 @@ orderRouter.patch("/admin/:orderId", isAdminAuthenticated, updateOrderStatus); /
 orderRouter.post(
   "/admin/:orderId/assign",
   isAdminAuthenticated,
-  assignOrderToDeliveryBoy
+  assignOrderToDeliveryBoy,
 ); // Assign order to delivery boy
 orderRouter.get(
   "/admin/delivery-boy",
   isAdminAuthenticated,
-  getAvailableDeliveryBoys
+  getAvailableDeliveryBoys,
 ); // Get available delivery boys
 // Get all orders assigned to a delivery boy (for sequencing)
 orderRouter.get(
   "/admin/delivery-boy/:deliveryBoyId/orders-for-sequencing",
   isAdminAuthenticated,
-  getDeliveryBoyOrdersForSequencing
+  getDeliveryBoyOrdersForSequencing,
 );
 // Update delivery sequence for a delivery boy
 orderRouter.post(
   "/admin/delivery-boy/:deliveryBoyId/update-sequence",
   isAdminAuthenticated,
-  updateDeliverySequence
+  updateDeliverySequence,
 );
 
 // Get all users assigned to a delivery boy (for user sequencing)
 orderRouter.get(
   "/admin/delivery-boy/:deliveryBoyId/user-assignments",
   isAdminAuthenticated,
-  getDeliveryBoyUserAssignments
+  getDeliveryBoyUserAssignments,
 );
 // Update user sequence for a delivery boy
 orderRouter.post(
   "/admin/delivery-boy/:deliveryBoyId/update-user-sequence",
   isAdminAuthenticated,
-  updateUserAssignmentSequence
+  updateUserAssignmentSequence,
 );
 
 // Bulk transfer users route (admin only)
 orderRouter.post(
   "/admin/bulk-transfer-users",
   isAdminAuthenticated,
-  transferAllUsersToAnotherDeliveryBoy
+  transferAllUsersToAnotherDeliveryBoy,
 );
 
 // User assignment routes (admin only)
 orderRouter.post(
   "/admin/user-assignment",
   isAdminAuthenticated,
-  assignUserToDeliveryBoy
+  assignUserToDeliveryBoy,
 ); // Assign user to delivery boy
 orderRouter.get(
   "/admin/user-assignments",
   isAdminAuthenticated,
-  getUserAssignments
+  getUserAssignments,
 ); // Get all user assignments
 orderRouter.delete(
   "/admin/user-assignment/:assignmentId",
   isAdminAuthenticated,
-  removeUserAssignment
+  removeUserAssignment,
 ); // Remove user assignment
 orderRouter.get(
   "/admin/unassigned-users",
   isAdminAuthenticated,
-  getUnassignedUsers
+  getUnassignedUsers,
 ); // Get unassigned users
 
 // User reassignment routes (admin only)
 orderRouter.post(
   "/admin/user-reassignment",
   isAdminAuthenticated,
-  reassignUserToDeliveryBoy
+  reassignUserToDeliveryBoy,
 ); // Reassign user to different delivery boy
 orderRouter.get(
   "/admin/user-reassignment-history/:userId",
   isAdminAuthenticated,
-  getUserReassignmentHistory
+  getUserReassignmentHistory,
 ); // Get user reassignment history
 
 // Public routes
@@ -128,17 +128,17 @@ orderRouter.delete("/:orderId", isAuthenticated, cancelOrder); // Cancel an orde
 orderRouter.get(
   "/delivery-boy/assigned",
   isDeliveryBoyAuthenticated,
-  getAssignedOrders
+  getAssignedOrders,
 ); // Get assigned orders for delivery boy
 orderRouter.patch(
   "/delivery-boy/:orderId/delivered",
   isDeliveryBoyAuthenticated,
-  markOrderAsDelivered
+  markOrderAsDelivered,
 ); // Mark order as delivered
 orderRouter.get(
   "/delivery-boy/history",
   isDeliveryBoyAuthenticated,
-  getDeliveryBoyOrderHistory
+  getDeliveryBoyOrderHistory,
 ); // Get delivery boy order history
 
 export default orderRouter;

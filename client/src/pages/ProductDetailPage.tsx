@@ -1,21 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   Star,
   ShoppingCart,
- 
   Minus,
   Plus,
   Shield,
   Truck,
-  RotateCcw
-} from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Product } from '../types';
-import { useCart } from '../contexts/CartContext';
-import { ApiService } from '../services/api';
-import AnimatedSection from '../components/AnimatedSection';
+  RotateCcw,
+} from "lucide-react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Product } from "../types";
+import { useCart } from "../contexts/CartContext";
+import { ApiService } from "../services/api";
+import AnimatedSection from "../components/AnimatedSection";
 
 interface ApiProduct {
   id: string;
@@ -53,7 +52,7 @@ export default function ProductDetailPage() {
 
   const loadProduct = async () => {
     if (!productId) {
-      navigate('/products');
+      navigate("/products");
       return;
     }
 
@@ -67,31 +66,35 @@ export default function ProductDetailPage() {
           name: apiProduct.name,
           description: apiProduct.description,
           price: apiProduct.price,
-          image: apiProduct.images?.[0] || '/placeholder.jpg', // Use first image or placeholder
+          image: apiProduct.images?.[0] || "/placeholder.jpg", // Use first image or placeholder
           category: apiProduct.category,
           stock: apiProduct.stock,
           badges: [], // Will add badges based on product properties
           rating: 4.5, // Default rating - could be enhanced later
           reviews: 0, // Default reviews - could be enhanced later
-          unit: 'piece', // Default unit - could be enhanced later
+          unit: "piece", // Default unit - could be enhanced later
         };
 
         // Add badges based on product properties
         if (apiProduct.inStock) {
-          transformedProduct.badges.push('In Stock');
+          transformedProduct.badges.push("In Stock");
         }
         if (apiProduct.brand) {
           transformedProduct.badges.push(apiProduct.brand);
         }
 
         setProduct(transformedProduct);
-        setProductImages(apiProduct.images && apiProduct.images.length > 0 ? apiProduct.images : ['/placeholder.jpg']);
+        setProductImages(
+          apiProduct.images && apiProduct.images.length > 0
+            ? apiProduct.images
+            : ["/placeholder.jpg"],
+        );
       } else {
-        navigate('/products');
+        navigate("/products");
       }
     } catch (error) {
-      console.error('Failed to load product:', error);
-      navigate('/products');
+      console.error("Failed to load product:", error);
+      navigate("/products");
     } finally {
       setIsLoading(false);
     }
@@ -105,13 +108,13 @@ export default function ProductDetailPage() {
 
   const incrementQuantity = () => {
     if (product && quantity < product.stock) {
-      setQuantity(prev => prev + 1);
+      setQuantity((prev) => prev + 1);
     }
   };
 
   const decrementQuantity = () => {
     if (quantity > 1) {
-      setQuantity(prev => prev - 1);
+      setQuantity((prev) => prev - 1);
     }
   };
 
@@ -124,7 +127,10 @@ export default function ProductDetailPage() {
               <div className="bg-gray-300 dark:bg-gray-700 h-96 rounded-2xl mb-4"></div>
               <div className="flex space-x-2">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="w-20 h-20 bg-gray-300 dark:bg-gray-700 rounded-lg"></div>
+                  <div
+                    key={i}
+                    className="w-20 h-20 bg-gray-300 dark:bg-gray-700 rounded-lg"
+                  ></div>
                 ))}
               </div>
             </div>
@@ -145,7 +151,8 @@ export default function ProductDetailPage() {
   }
 
   // Use actual product images from API
-  const images = productImages.length > 0 ? productImages : ['/placeholder.jpg'];
+  const images =
+    productImages.length > 0 ? productImages : ["/placeholder.jpg"];
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20">
@@ -153,7 +160,7 @@ export default function ProductDetailPage() {
         {/* Back Button */}
         <AnimatedSection>
           <motion.button
-            onClick={() => navigate('/products')}
+            onClick={() => navigate("/products")}
             className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 mb-8 transition-colors"
             whileHover={{ x: -5 }}
           >
@@ -175,7 +182,12 @@ export default function ProductDetailPage() {
                 {product.originalPrice && (
                   <div className="absolute top-4 right-4">
                     <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                      {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                      {Math.round(
+                        ((product.originalPrice - product.price) /
+                          product.originalPrice) *
+                          100,
+                      )}
+                      % OFF
                     </span>
                   </div>
                 )}
@@ -186,10 +198,11 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(index)}
-                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${selectedImage === index
-                      ? 'border-emerald-500'
-                      : 'border-gray-200 dark:border-gray-700'
-                      }`}
+                    className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors ${
+                      selectedImage === index
+                        ? "border-emerald-500"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
                   >
                     <img
                       src={image}
@@ -227,10 +240,11 @@ export default function ProductDetailPage() {
                     {[...Array(5)].map((_, i) => (
                       <Star
                         key={i}
-                        className={`w-5 h-5 ${i < Math.floor(product.rating)
-                          ? 'text-yellow-500 fill-yellow-500'
-                          : 'text-gray-300'
-                          }`}
+                        className={`w-5 h-5 ${
+                          i < Math.floor(product.rating)
+                            ? "text-yellow-500 fill-yellow-500"
+                            : "text-gray-300"
+                        }`}
                       />
                     ))}
                     <span className="text-lg font-medium text-gray-700 dark:text-gray-300">
@@ -268,12 +282,21 @@ export default function ProductDetailPage() {
 
               {/* Stock Status */}
               <div className="flex items-center space-x-2">
-                <div className={`w-3 h-3 rounded-full ${product.stock > 10 ? 'bg-green-500' :
-                  product.stock > 0 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    product.stock > 10
+                      ? "bg-green-500"
+                      : product.stock > 0
+                        ? "bg-yellow-500"
+                        : "bg-red-500"
+                  }`}
+                ></div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {product.stock > 10 ? 'In Stock' :
-                    product.stock > 0 ? `Only ${product.stock} left` : 'Out of Stock'}
+                  {product.stock > 10
+                    ? "In Stock"
+                    : product.stock > 0
+                      ? `Only ${product.stock} left`
+                      : "Out of Stock"}
                 </span>
               </div>
 
@@ -313,10 +336,8 @@ export default function ProductDetailPage() {
                   whileTap={{ scale: 0.98 }}
                 >
                   <ShoppingCart size={20} />
-                  <span>{cartLoading ? 'Adding...' : 'Add to Cart'}</span>
+                  <span>{cartLoading ? "Adding..." : "Add to Cart"}</span>
                 </motion.button>
-
-               
               </div>
 
               {/* Product Features */}
@@ -326,7 +347,9 @@ export default function ProductDetailPage() {
                     <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Quality Assured</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Quality Assured
+                    </h4>
                     <p className="text-sm text-gray-500">100% Fresh</p>
                   </div>
                 </div>
@@ -336,7 +359,9 @@ export default function ProductDetailPage() {
                     <Truck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Fast Delivery</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Fast Delivery
+                    </h4>
                     <p className="text-sm text-gray-500">Same day</p>
                   </div>
                 </div>
@@ -346,7 +371,9 @@ export default function ProductDetailPage() {
                     <RotateCcw className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Delivered in glass bottle</h4>
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      Delivered in glass bottle
+                    </h4>
                     <p className="text-sm text-gray-500">100% Pure</p>
                   </div>
                 </div>

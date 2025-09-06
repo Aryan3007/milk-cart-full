@@ -26,8 +26,6 @@ app.use(bodyParser.json());
 app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded
 
-console.log(process.env.MONGO_URL);
-
 // Connect to database
 const connectDB = async () => {
   try {

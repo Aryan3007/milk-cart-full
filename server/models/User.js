@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema(
     email: {
       type: String,
       required: [true, "Email is required"],
+      unique: true, // Add unique constraint here
       lowercase: true,
       trim: true,
       match: [/\S+@\S+\.\S+/, "Please use a valid email address"],
@@ -130,11 +131,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
-
-// Indexes for better performance
-userSchema.index({ email: 1 }, { unique: true });
 
 // Pre-save middleware to hash password
 userSchema.pre("save", async function (next) {

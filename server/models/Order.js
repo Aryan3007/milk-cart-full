@@ -124,10 +124,10 @@ const orderSchema = new mongoose.Schema(
           const maxDate = new Date();
           maxDate.setDate(today.getDate() + 7);
           maxDate.setHours(23, 59, 59, 999);
-          
+
           const deliveryDate = new Date(value);
           deliveryDate.setHours(0, 0, 0, 0);
-          
+
           return deliveryDate >= today && deliveryDate <= maxDate;
         },
         message: "Delivery date must be between today and 7 days from today",
@@ -229,7 +229,7 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for better performance
@@ -248,7 +248,7 @@ orderSchema.statics.canPlaceOrderForShift = function (deliveryShift) {
   // Get current time in IST (Indian Standard Time) using proper timezone conversion
   const now = new Date();
   const istNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
   );
   const currentHour = istNow.getHours();
   const currentMinutes = istNow.getMinutes();
@@ -258,12 +258,12 @@ orderSchema.statics.canPlaceOrderForShift = function (deliveryShift) {
     `🇮🇳 IST time: ${istNow.toLocaleString("en-IN", {
       timeZone: "Asia/Kolkata",
       hour12: false,
-    })}`
+    })}`,
   );
   console.log(
     `🕐 Current IST time: ${currentHour}:${currentMinutes
       .toString()
-      .padStart(2, "0")}`
+      .padStart(2, "0")}`,
   );
   console.log(`📦 Checking availability for ${deliveryShift} shift`);
 
@@ -285,7 +285,7 @@ orderSchema.statics.canPlaceOrderForShift = function (deliveryShift) {
     console.log(
       `✅ Morning shift orders allowed at ${currentHour}:${currentMinutes
         .toString()
-        .padStart(2, "0")}`
+        .padStart(2, "0")}`,
     );
     return {
       canPlace: true,
@@ -305,7 +305,7 @@ orderSchema.statics.canPlaceOrderForShift = function (deliveryShift) {
     console.log(
       `✅ Evening shift orders allowed at ${currentHour}:${currentMinutes
         .toString()
-        .padStart(2, "0")}`
+        .padStart(2, "0")}`,
     );
     return {
       canPlace: true,
@@ -330,7 +330,7 @@ orderSchema.methods.canBeCancelledByUser = function () {
 
   // Get current time in IST (Indian Standard Time) using proper timezone conversion
   const istNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
   );
   const currentHour = istNow.getHours();
   const currentMinutes = istNow.getMinutes();
@@ -377,7 +377,7 @@ orderSchema.methods.canBeMarkedAsDelivered = function () {
   // Get current time in IST (Indian Standard Time)
   const now = new Date();
   const istNow = new Date(
-    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+    now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
   );
   const currentHour = istNow.getHours();
 
@@ -385,7 +385,7 @@ orderSchema.methods.canBeMarkedAsDelivered = function () {
     `🕐 Current IST time: ${currentHour}:${istNow
       .getMinutes()
       .toString()
-      .padStart(2, "0")}`
+      .padStart(2, "0")}`,
   );
   console.log(`📦 Checking delivery time for ${this.deliveryShift} shift`);
 

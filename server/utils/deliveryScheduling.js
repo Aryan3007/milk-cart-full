@@ -15,13 +15,8 @@ export const getAvailableDeliverySlots = (currentDate = new Date()) => {
   const currentMinute = now.getMinutes();
   const currentTimeInMinutes = currentHour * 60 + currentMinute;
 
-  console.log(`[DEBUG] Current time: ${now.toISOString()}, Hour: ${currentHour}, Minutes: ${currentMinute}`);
-  console.log(`[DEBUG] Current local date: ${now.toLocaleDateString()}, UTC date: ${now.toISOString().split("T")[0]}`);
-
   // Time cutoffs
   const morningCutoff = 23 * 60 + 59; // 11:59 PM in minutes (for next day morning delivery)
-
-  console.log(`[DEBUG] Current time in minutes: ${currentTimeInMinutes}, Morning cutoff: ${morningCutoff}`);
 
   // Generate slots for 7 days starting from tomorrow
   for (let dayOffset = 1; dayOffset <= 7; dayOffset++) {
@@ -30,11 +25,12 @@ export const getAvailableDeliverySlots = (currentDate = new Date()) => {
     date.setHours(0, 0, 0, 0); // Reset to start of day
 
     // Use local date string instead of UTC
-    const dateStr = date.getFullYear() + '-' + 
-                   String(date.getMonth() + 1).padStart(2, '0') + '-' + 
-                   String(date.getDate()).padStart(2, '0');
-    
-    console.log(`[DEBUG] Processing day offset ${dayOffset}: ${dateStr} (local), UTC: ${date.toISOString().split("T")[0]}`);
+    const dateStr =
+      date.getFullYear() +
+      "-" +
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "-" +
+      String(date.getDate()).padStart(2, "0");
 
     const slot = {
       date: dateStr,
@@ -80,7 +76,6 @@ export const getAvailableDeliverySlots = (currentDate = new Date()) => {
     slots.push(slot);
   }
 
-  console.log(`[DEBUG] Generated ${slots.length} slots`);
   return slots;
 };
 
@@ -94,7 +89,7 @@ export const getAvailableDeliverySlots = (currentDate = new Date()) => {
 export const validateDeliverySlot = (
   deliveryDate,
   deliveryShift,
-  currentDate = new Date()
+  currentDate = new Date(),
 ) => {
   const now = new Date(currentDate);
   const targetDate = new Date(deliveryDate);
@@ -181,7 +176,7 @@ export const validateDeliverySlot = (
  */
 export const getDateLabel = (dateStr, currentDate = new Date()) => {
   const targetDate = new Date(dateStr);
-  
+
   // Always return the actual date instead of "Today" or "Tomorrow"
   return targetDate.toLocaleDateString("en-US", {
     weekday: "long",
@@ -217,7 +212,7 @@ export const getDeliveryTimeSlot = (shift) => {
 export const formatDeliverySlot = (
   dateStr,
   shift,
-  currentDate = new Date()
+  currentDate = new Date(),
 ) => {
   const dateLabel = getDateLabel(dateStr, currentDate);
   const timeSlot = getDeliveryTimeSlot(shift);

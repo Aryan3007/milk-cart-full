@@ -41,7 +41,7 @@ export default function CartPage() {
   // Handler for updating quantity
   const handleUpdateQuantity = async (
     productId: string,
-    newQuantity: number
+    newQuantity: number,
   ) => {
     if (newQuantity < 1) return;
     setItemLoading((prev) => ({ ...prev, [productId]: true }));
@@ -181,7 +181,7 @@ export default function CartPage() {
                           onClick={() =>
                             handleUpdateQuantity(
                               item.product.id,
-                              item.quantity - 1
+                              item.quantity - 1,
                             )
                           }
                           disabled={
@@ -202,7 +202,7 @@ export default function CartPage() {
                           onClick={() =>
                             handleUpdateQuantity(
                               item.product.id,
-                              item.quantity + 1
+                              item.quantity + 1,
                             )
                           }
                           disabled={

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useAuth0Context } from '../contexts/Auth0Context';
-import { useAuth } from '../contexts/AuthContext';
+import React, { useState } from "react";
+import { useAuth0Context } from "../contexts/Auth0Context";
+import { useAuth } from "../contexts/AuthContext";
 
 interface SimpleGoogleLoginProps {
   onSuccess?: () => void;
@@ -13,10 +13,11 @@ const SimpleGoogleLogin: React.FC<SimpleGoogleLoginProps> = ({
   onSuccess,
   onError,
   text = "Continue with Google",
-  disabled = false
+  disabled = false,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { loginWithGoogle, isAuth0Loading, isAuth0Authenticated } = useAuth0Context();
+  const { loginWithGoogle, isAuth0Loading, isAuth0Authenticated } =
+    useAuth0Context();
   const { googleLogin } = useAuth();
 
   const handleGoogleLogin = async () => {
@@ -26,11 +27,11 @@ const SimpleGoogleLogin: React.FC<SimpleGoogleLoginProps> = ({
 
     try {
       // Check if Auth0 is configured and use it
-      const isAuth0Configured = 
-        import.meta.env.VITE_AUTH0_DOMAIN && 
+      const isAuth0Configured =
+        import.meta.env.VITE_AUTH0_DOMAIN &&
         import.meta.env.VITE_AUTH0_CLIENT_ID &&
-        import.meta.env.VITE_AUTH0_DOMAIN !== 'your-auth0-domain.auth0.com' &&
-        import.meta.env.VITE_AUTH0_CLIENT_ID !== 'your-auth0-client-id';
+        import.meta.env.VITE_AUTH0_DOMAIN !== "your-auth0-domain.auth0.com" &&
+        import.meta.env.VITE_AUTH0_CLIENT_ID !== "your-auth0-client-id";
 
       if (isAuth0Configured) {
         // Use Auth0 for Google authentication
@@ -38,27 +39,29 @@ const SimpleGoogleLogin: React.FC<SimpleGoogleLoginProps> = ({
         onSuccess?.();
       } else {
         // Fallback to mock Google authentication for development
-        console.log('🔧 Using fallback Google authentication (Auth0 not configured)');
-        
+        console.log(
+          "🔧 Using fallback Google authentication (Auth0 not configured)",
+        );
+
         // Mock Google user data for development
         const mockGoogleData = {
           googleId: `google_${Date.now()}`,
-          email: 'demo@gmail.com',
-          name: 'Demo User',
-          avatar: 'https://via.placeholder.com/150',
+          email: "demo@gmail.com",
+          name: "Demo User",
+          avatar: "https://via.placeholder.com/150",
         };
 
         const result = await googleLogin(mockGoogleData);
-        
+
         if (result.success) {
           onSuccess?.();
         } else {
-          onError?.(result.message || 'Google login failed');
+          onError?.(result.message || "Google login failed");
         }
       }
     } catch (error) {
-      console.error('Google login error:', error);
-      onError?.(error instanceof Error ? error.message : 'Google login failed');
+      console.error("Google login error:", error);
+      onError?.(error instanceof Error ? error.message : "Google login failed");
     } finally {
       setIsLoading(false);
     }
@@ -93,10 +96,10 @@ const SimpleGoogleLogin: React.FC<SimpleGoogleLoginProps> = ({
         </svg>
       )}
       <span className="text-sm font-medium">
-        {isLoading || isAuth0Loading ? 'Signing in...' : text}
+        {isLoading || isAuth0Loading ? "Signing in..." : text}
       </span>
     </button>
   );
 };
 
-export default SimpleGoogleLogin; 
+export default SimpleGoogleLogin;

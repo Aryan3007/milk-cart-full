@@ -1,90 +1,99 @@
-import { motion } from 'framer-motion';
-import { 
-  Leaf, 
-  Shield, 
-  Clock, 
-  Heart, 
-  FlaskConical, 
-  TruckIcon 
-} from 'lucide-react';
-import AnimatedSection from './AnimatedSection';
+import { motion } from "framer-motion";
+import {
+  Leaf,
+  Shield,
+  Clock,
+  Heart,
+  FlaskConical,
+  TruckIcon,
+} from "lucide-react";
+import AnimatedSection from "./AnimatedSection";
 
 const benefits = [
   {
     icon: Leaf,
-    title: '100% Natural',
-    description: 'No artificial preservatives, colors, or additives. Pure as nature intended.',
-    color: 'green'
+    title: "100% Natural",
+    description:
+      "No artificial preservatives, colors, or additives. Pure as nature intended.",
+    color: "green",
   },
   {
     icon: Shield,
-    title: 'No Preservatives',
-    description: 'Fresh products delivered daily without any chemical preservatives.',
-    color: 'blue'
+    title: "No Preservatives",
+    description:
+      "Fresh products delivered daily without any chemical preservatives.",
+    color: "blue",
   },
   {
     icon: Clock,
-    title: 'Fresh Daily',
-    description: 'Milked fresh every morning and delivered the same day to ensure freshness.',
-    color: 'yellow'
+    title: "Fresh Daily",
+    description:
+      "Milked fresh every morning and delivered the same day to ensure freshness.",
+    color: "yellow",
   },
   {
     icon: Heart,
-    title: 'Ethically Sourced',
-    description: 'Our cows are raised with love in natural, stress-free environments.',
-    color: 'red'
+    title: "Ethically Sourced",
+    description:
+      "Our cows are raised with love in natural, stress-free environments.",
+    color: "red",
   },
   {
     icon: FlaskConical,
-    title: 'Antibiotic-Free',
-    description: 'Our milk is guaranteed free from antibiotics and harmful residues.',
-    color: 'purple'
+    title: "Antibiotic-Free",
+    description:
+      "Our milk is guaranteed free from antibiotics and harmful residues.",
+    color: "purple",
   },
   {
     icon: TruckIcon,
-    title: 'Farm to Table',
-    description: 'Direct delivery from our farm ensures the shortest supply chain possible.',
-    color: 'indigo'
-  }
+    title: "Farm to Table",
+    description:
+      "Direct delivery from our farm ensures the shortest supply chain possible.",
+    color: "indigo",
+  },
 ];
 
-const colorMap: Record<string, { bg: string; icon: string; border: string; shadow: string }> = {
+const colorMap: Record<
+  string,
+  { bg: string; icon: string; border: string; shadow: string }
+> = {
   green: {
-    bg: 'bg-gradient-to-br from-green-400/80 to-green-600/80',
-    icon: 'text-white',
-    border: 'border-green-400',
-    shadow: 'shadow-green-400/40'
+    bg: "bg-gradient-to-br from-green-400/80 to-green-600/80",
+    icon: "text-white",
+    border: "border-green-400",
+    shadow: "shadow-green-400/40",
   },
   blue: {
-    bg: 'bg-gradient-to-br from-blue-400/80 to-blue-600/80',
-    icon: 'text-white',
-    border: 'border-blue-400',
-    shadow: 'shadow-blue-400/40'
+    bg: "bg-gradient-to-br from-blue-400/80 to-blue-600/80",
+    icon: "text-white",
+    border: "border-blue-400",
+    shadow: "shadow-blue-400/40",
   },
   yellow: {
-    bg: 'bg-gradient-to-br from-yellow-300/80 to-yellow-500/80',
-    icon: 'text-yellow-900',
-    border: 'border-yellow-400',
-    shadow: 'shadow-yellow-400/40'
+    bg: "bg-gradient-to-br from-yellow-300/80 to-yellow-500/80",
+    icon: "text-yellow-900",
+    border: "border-yellow-400",
+    shadow: "shadow-yellow-400/40",
   },
   red: {
-    bg: 'bg-gradient-to-br from-red-400/80 to-red-600/80',
-    icon: 'text-white',
-    border: 'border-red-400',
-    shadow: 'shadow-red-400/40'
+    bg: "bg-gradient-to-br from-red-400/80 to-red-600/80",
+    icon: "text-white",
+    border: "border-red-400",
+    shadow: "shadow-red-400/40",
   },
   purple: {
-    bg: 'bg-gradient-to-br from-purple-400/80 to-purple-600/80',
-    icon: 'text-white',
-    border: 'border-purple-400',
-    shadow: 'shadow-purple-400/40'
+    bg: "bg-gradient-to-br from-purple-400/80 to-purple-600/80",
+    icon: "text-white",
+    border: "border-purple-400",
+    shadow: "shadow-purple-400/40",
   },
   indigo: {
-    bg: 'bg-gradient-to-br from-indigo-400/80 to-indigo-600/80',
-    icon: 'text-white',
-    border: 'border-indigo-400',
-    shadow: 'shadow-indigo-400/40'
-  }
+    bg: "bg-gradient-to-br from-indigo-400/80 to-indigo-600/80",
+    icon: "text-white",
+    border: "border-indigo-400",
+    shadow: "shadow-indigo-400/40",
+  },
 };
 
 export default function WhyChooseUs() {
@@ -96,25 +105,30 @@ export default function WhyChooseUs() {
             Why Choose Legends Milk Cart?
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We're committed to providing the highest quality dairy products with complete transparency 
-            and care for both our customers and our animals.
+            We're committed to providing the highest quality dairy products with
+            complete transparency and care for both our customers and our
+            animals.
           </p>
         </AnimatedSection>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {benefits.map((benefit, index) => (
-            <AnimatedSection 
+            <AnimatedSection
               key={index}
               animation="scaleIn"
               delay={index * 0.1}
             >
-              <motion.div 
+              <motion.div
                 className={`relative p-8 rounded-2xl border-2 ${colorMap[benefit.color].border} ${colorMap[benefit.color].bg} ${colorMap[benefit.color].shadow} shadow-xl hover:brightness-110 hover:scale-105 transition-all duration-300 min-h-[260px] flex flex-col justify-center`}
                 whileHover={{ y: -8, scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
-                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 mx-auto bg-white/10 backdrop-blur-md border-2 ${colorMap[benefit.color].border}`}>
-                  <benefit.icon className={`w-12 h-12 ${colorMap[benefit.color].icon}`} />
+                <div
+                  className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-6 mx-auto bg-white/10 backdrop-blur-md border-2 ${colorMap[benefit.color].border}`}
+                >
+                  <benefit.icon
+                    className={`w-12 h-12 ${colorMap[benefit.color].icon}`}
+                  />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-4 text-center">
                   {benefit.title}
@@ -122,7 +136,9 @@ export default function WhyChooseUs() {
                 <p className="text-white/90 text-center leading-relaxed">
                   {benefit.description}
                 </p>
-                <div className={`absolute -inset-1 rounded-2xl pointer-events-none border-4 ${colorMap[benefit.color].border} opacity-30 blur-lg`}></div>
+                <div
+                  className={`absolute -inset-1 rounded-2xl pointer-events-none border-4 ${colorMap[benefit.color].border} opacity-30 blur-lg`}
+                ></div>
               </motion.div>
             </AnimatedSection>
           ))}

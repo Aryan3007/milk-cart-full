@@ -310,7 +310,7 @@ export const createUserSubscription = async (req, res) => {
     const subscriptionStartDate = startDate ? new Date(startDate) : new Date();
     const subscriptionEndDate = new Date(subscriptionStartDate);
     subscriptionEndDate.setDate(
-      subscriptionEndDate.getDate() + subscriptionPlan.duration
+      subscriptionEndDate.getDate() + subscriptionPlan.duration,
     );
 
     // Calculate next delivery date (start from tomorrow if starting today)
@@ -559,7 +559,7 @@ export const cancelUserSubscription = async (req, res) => {
     const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     const daysUsed = Math.max(
       0,
-      Math.ceil((today - startDate) / (1000 * 60 * 60 * 24))
+      Math.ceil((today - startDate) / (1000 * 60 * 60 * 24)),
     );
     const daysRemaining = Math.max(0, totalDays - daysUsed);
 
@@ -985,7 +985,7 @@ export const createPaymentSession = async (req, res) => {
       paymentConfig.adminUpiName,
       subscription.paymentInfo.amount,
       referenceNumber,
-      `Payment for ${plan.name} subscription`
+      `Payment for ${plan.name} subscription`,
     );
 
     // Generate QR code
@@ -1089,7 +1089,8 @@ export const markSubscriptionPaymentCompleted = async (req, res) => {
     const now = new Date();
     const sessionCreated = new Date(payment.createdAt);
     const expiryTime = new Date(
-      sessionCreated.getTime() + paymentConfig.paymentTimeoutMinutes * 60 * 1000
+      sessionCreated.getTime() +
+        paymentConfig.paymentTimeoutMinutes * 60 * 1000,
     );
 
     if (now > expiryTime) {
@@ -1337,7 +1338,7 @@ export const getAllRefundRequests = async (req, res) => {
       .populate("userId", "name email phone")
       .populate(
         "subscriptionId",
-        "name milkType volume duration price dailyPrice"
+        "name milkType volume duration price dailyPrice",
       )
       .populate("userSubscriptionId", "status paymentStatus startDate endDate")
       .sort(sortOptions)
@@ -1357,7 +1358,7 @@ export const getAllRefundRequests = async (req, res) => {
               daysUsed: refundObj.daysUsed,
               daysRemaining: refundObj.daysRemaining,
             },
-          }
+          },
         );
 
         // Recalculate based on subscription dates if available
@@ -1371,11 +1372,11 @@ export const getAllRefundRequests = async (req, res) => {
           const createdAt = new Date(refundObj.createdAt);
 
           const totalDays = Math.ceil(
-            (endDate - startDate) / (1000 * 60 * 60 * 24)
+            (endDate - startDate) / (1000 * 60 * 60 * 24),
           );
           const daysUsed = Math.max(
             0,
-            Math.ceil((createdAt - startDate) / (1000 * 60 * 60 * 24))
+            Math.ceil((createdAt - startDate) / (1000 * 60 * 60 * 24)),
           );
           const daysRemaining = Math.max(0, totalDays - daysUsed);
 
@@ -1426,7 +1427,7 @@ export const getRefundRequestById = async (req, res) => {
       .populate("userId", "name email phone")
       .populate(
         "subscriptionId",
-        "name milkType volume duration price dailyPrice"
+        "name milkType volume duration price dailyPrice",
       )
       .populate("userSubscriptionId", "status paymentStatus startDate endDate")
       .populate("processedBy", "name email");
@@ -1483,7 +1484,7 @@ export const updateRefundRequestStatus = async (req, res) => {
 
     // Find related subscription
     const userSubscription = await UserSubscription.findById(
-      refundRequest.userSubscriptionId
+      refundRequest.userSubscriptionId,
     );
     if (
       userSubscription &&

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
 import {
   MapPin,
   Phone,
@@ -10,64 +10,69 @@ import {
   Instagram,
   CheckCircle,
   AlertCircle,
-  Loader2
-} from 'lucide-react';
-import AnimatedSection from './AnimatedSection';
-import { submitContactForm } from '../utils/api';
+  Loader2,
+} from "lucide-react";
+import AnimatedSection from "./AnimatedSection";
+import { ApiService } from "../services/api";
 
 export default function Contact() {
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    message: ''
+    name: "",
+    phone: "",
+    message: "",
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<{
-    type: 'success' | 'error' | null;
+    type: "success" | "error" | null;
     message: string;
-  }>({ type: null, message: '' });
+  }>({ type: null, message: "" });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus({ type: null, message: '' });
+    setSubmitStatus({ type: null, message: "" });
 
     try {
-      const response = await submitContactForm(formData);
+      const response = await ApiService.submitContactForm(formData);
 
       if (response.success) {
         setSubmitStatus({
-          type: 'success',
-          message: response.message || 'Thank you for your message! We will get back to you soon.'
+          type: "success",
+          message:
+            response.message ||
+            "Thank you for your message! We will get back to you soon.",
         });
         // Reset form
-        setFormData({ name: '', phone: '', message: '' });
+        setFormData({ name: "", phone: "", message: "" });
       } else {
         setSubmitStatus({
-          type: 'error',
-          message: response.message || 'Something went wrong. Please try again.'
+          type: "error",
+          message:
+            response.message || "Something went wrong. Please try again.",
         });
       }
     } catch (error) {
-      console.error('Contact form submission error:', error);
+      console.error("Contact form submission error:", error);
       setSubmitStatus({
-        type: 'error',
-        message: 'Network error. Please check your connection and try again.'
+        type: "error",
+        message: "Network error. Please check your connection and try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
     // Clear any previous error messages when user starts typing
-    if (submitStatus.type === 'error') {
-      setSubmitStatus({ type: null, message: '' });
+    if (submitStatus.type === "error") {
+      setSubmitStatus({ type: null, message: "" });
     }
   };
 
@@ -102,11 +107,12 @@ export default function Contact() {
                       <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Address</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Address
+                      </h4>
                       <p className="text-gray-600 dark:text-gray-300">
-                      PLOT NO. B-6 , GOPALPURA BAI PASS, KRISHI VIHAR, <br />
-JAIPUR, RAJASTHAN
-
+                        PLOT NO. B-6 , GOPALPURA BAI PASS, KRISHI VIHAR, <br />
+                        JAIPUR, RAJASTHAN
                       </p>
                     </div>
                   </motion.div>
@@ -120,9 +126,12 @@ JAIPUR, RAJASTHAN
                       <Phone className="w-6 h-6 text-green-600 dark:text-green-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Phone</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Phone
+                      </h4>
                       <p className="text-gray-600 dark:text-gray-300">
-                        +91 85709 59545<br />
+                        +91 85709 59545
+                        <br />
                         +91 87654 32109
                       </p>
                     </div>
@@ -137,11 +146,15 @@ JAIPUR, RAJASTHAN
                       <Mail className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
-                      <a href="mailto:legendsmilkcart@gmail.com" className="text-gray-600 dark:text-gray-300">
-                      legendsmilkcart@gmail.com
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Email
+                      </h4>
+                      <a
+                        href="mailto:legendsmilkcart@gmail.com"
+                        className="text-gray-600 dark:text-gray-300"
+                      >
+                        legendsmilkcart@gmail.com
                       </a>
-                     
                     </div>
                   </motion.div>
 
@@ -154,9 +167,12 @@ JAIPUR, RAJASTHAN
                       <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">Business Hours</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">
+                        Business Hours
+                      </h4>
                       <p className="text-gray-600 dark:text-gray-300">
-                        Mon - Sat: 6:00 AM - 8:00 PM<br />
+                        Mon - Sat: 6:00 AM - 8:00 PM
+                        <br />
                         Sunday: 8:00 AM - 6:00 PM
                       </p>
                     </div>
@@ -169,22 +185,22 @@ JAIPUR, RAJASTHAN
                   Follow Us
                 </h3>
                 <div className="flex space-x-4">
-                <motion.a
-                href="https://www.facebook.com/share/16WSM9iDXg/"
-                className="bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Facebook className="w-5 h-5" />
-              </motion.a>
-              <motion.a
-                href="https://www.instagram.com/legendsmilkcart?igsh=NGg0d2dxZ3RmcGw0"
-                className="bg-pink-600 p-2 rounded-lg hover:bg-pink-700 transition-colors duration-200"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <Instagram className="w-5 h-5" />
-              </motion.a>
+                  <motion.a
+                    href="https://www.facebook.com/share/16WSM9iDXg/"
+                    className="bg-blue-600 p-2 rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Facebook className="w-5 h-5" />
+                  </motion.a>
+                  <motion.a
+                    href="https://www.instagram.com/legendsmilkcart?igsh=NGg0d2dxZ3RmcGw0"
+                    className="bg-pink-600 p-2 rounded-lg hover:bg-pink-700 transition-colors duration-200"
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                  >
+                    <Instagram className="w-5 h-5" />
+                  </motion.a>
                   {/* <motion.a
                     href="#"
                     className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 transition-colors duration-200"
@@ -209,23 +225,29 @@ JAIPUR, RAJASTHAN
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`mb-6 p-4 rounded-lg flex items-center space-x-3 ${submitStatus.type === 'success'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                      : 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-                    }`}
+                  className={`mb-6 p-4 rounded-lg flex items-center space-x-3 ${
+                    submitStatus.type === "success"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                      : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                  }`}
                 >
-                  {submitStatus.type === 'success' ? (
+                  {submitStatus.type === "success" ? (
                     <CheckCircle className="w-5 h-5 flex-shrink-0" />
                   ) : (
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
                   )}
-                  <span className="text-sm font-medium">{submitStatus.message}</span>
+                  <span className="text-sm font-medium">
+                    {submitStatus.message}
+                  </span>
                 </motion.div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Full Name *
                   </label>
                   <input
@@ -244,7 +266,10 @@ JAIPUR, RAJASTHAN
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Phone Number *
                   </label>
                   <input
@@ -262,7 +287,10 @@ JAIPUR, RAJASTHAN
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="message"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Message *
                   </label>
                   <textarea

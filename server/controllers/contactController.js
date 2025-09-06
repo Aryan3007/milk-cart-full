@@ -52,9 +52,8 @@ export const submitContactForm = async (req, res) => {
     });
 
     // Send email to admin
-    const emailResult = await emailService.sendContactFormToAdmin(
-      sanitizedFormData
-    );
+    const emailResult =
+      await emailService.sendContactFormToAdmin(sanitizedFormData);
 
     if (emailResult.success) {
       console.log("✅ Contact form email sent successfully");

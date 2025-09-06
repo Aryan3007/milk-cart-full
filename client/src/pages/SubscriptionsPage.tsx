@@ -30,14 +30,14 @@ interface UserSubscription {
   _id: string;
   orderId: string;
   status:
-  | "pending"
-  | "processing"
-  | "active"
-  | "paused"
-  | "cancellation_requested"
-  | "cancelled"
-  | "completed"
-  | "expired";
+    | "pending"
+    | "processing"
+    | "active"
+    | "paused"
+    | "cancellation_requested"
+    | "cancelled"
+    | "completed"
+    | "expired";
   paymentStatus: "pending" | "paid" | "failed" | "refunded";
   startDate: string;
   endDate: string;
@@ -90,7 +90,7 @@ const SubscriptionsPage: React.FC = () => {
 
   // const { user } = useAuth(); // Remove unused user
   const [activeTab, setActiveTab] = useState<"plans" | "my-subscriptions">(
-    "plans"
+    "plans",
   );
   const [subscriptionPlans, setSubscriptionPlans] = useState<
     SubscriptionPlan[]
@@ -101,12 +101,12 @@ const SubscriptionsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [plansLoading, setPlansLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(
-    null
+    null,
   );
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(
-    null
+    null,
   );
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [upiTransactionId, setUpiTransactionId] = useState("");
@@ -159,8 +159,6 @@ const SubscriptionsPage: React.FC = () => {
   const loadSubscriptionPlans = async () => {
     setPlansLoading(true);
     try {
-
-
       const params = new URLSearchParams();
       if (milkTypeFilter !== "all") {
         params.append("milkType", milkTypeFilter);
@@ -170,7 +168,7 @@ const SubscriptionsPage: React.FC = () => {
         `${import.meta.env.VITE_BACKEND_URL}/subscription/plans?${params}`,
         {
           method: "GET",
-        }
+        },
       );
 
       const data = await response.json();
@@ -181,7 +179,7 @@ const SubscriptionsPage: React.FC = () => {
         if (durationFilter !== "all") {
           plans = plans.filter(
             (plan: SubscriptionPlan) =>
-              plan.duration === parseInt(durationFilter)
+              plan.duration === parseInt(durationFilter),
           );
         }
 
@@ -209,7 +207,7 @@ const SubscriptionsPage: React.FC = () => {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -257,7 +255,7 @@ const SubscriptionsPage: React.FC = () => {
             subscriptionId: selectedPlan._id,
             ...subscriptionForm,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -276,14 +274,15 @@ const SubscriptionsPage: React.FC = () => {
   // Create payment session
   const createPaymentSession = async (
     planId: string,
-    subscriptionId: string
+    subscriptionId: string,
   ) => {
     try {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("Authentication required");
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL
+        `${
+          import.meta.env.VITE_BACKEND_URL
         }/subscription/create-payment-session`,
         {
           method: "POST",
@@ -295,13 +294,13 @@ const SubscriptionsPage: React.FC = () => {
             subscriptionId: subscriptionId,
             planId: planId,
           }),
-        }
+        },
       );
 
       const data = await response.json();
       if (data.success) {
         successToastHandler(
-          "Payment session created! Scan QR code to pay via UPI"
+          "Payment session created! Scan QR code to pay via UPI",
         );
         setPaymentSession(data.data);
         setTimeRemaining(data.data.expiresIn);
@@ -321,7 +320,8 @@ const SubscriptionsPage: React.FC = () => {
       if (!token) throw new Error("Authentication required");
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL
+        `${
+          import.meta.env.VITE_BACKEND_URL
         }/subscription/mark-payment-completed/${paymentSession.paymentId}`,
         {
           method: "POST",
@@ -333,13 +333,13 @@ const SubscriptionsPage: React.FC = () => {
             upiTransactionId,
             upiReferenceNumber,
           }),
-        }
+        },
       );
 
       const data = await response.json();
       if (data.success) {
         successToastHandler(
-          "Payment submitted successfully! Your subscription will be activated soon."
+          "Payment submitted successfully! Your subscription will be activated soon.",
         );
         setPaymentCompleted(true);
         setShowPaymentForm(false);
@@ -374,7 +374,8 @@ const SubscriptionsPage: React.FC = () => {
       if (!token) throw new Error("Authentication required");
 
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/subscription/my-subscriptions/${cancellingSubscription._id
+        `${import.meta.env.VITE_BACKEND_URL}/subscription/my-subscriptions/${
+          cancellingSubscription._id
         }/cancel`,
         {
           method: "PATCH",
@@ -386,7 +387,7 @@ const SubscriptionsPage: React.FC = () => {
             reason: cancelForm.reason,
             refundDetails: cancelForm.refundDetails,
           }),
-        }
+        },
       );
 
       const data = await response.json();
@@ -409,7 +410,7 @@ const SubscriptionsPage: React.FC = () => {
         // Reload subscriptions
         loadUserSubscriptions();
         successToastHandler(
-          "Subscription cancelled successfully. Refund request has been created."
+          "Subscription cancelled successfully. Refund request has been created.",
         );
       }
     } catch (error) {
@@ -443,63 +444,64 @@ const SubscriptionsPage: React.FC = () => {
           color: "text-green-600 bg-green-50 border-green-200",
           icon: "🟢",
           label: "Active",
-          description: "Your subscription is active and deliveries are ongoing"
+          description: "Your subscription is active and deliveries are ongoing",
         };
       case "pending":
         return {
           color: "text-orange-600 bg-orange-50 border-orange-200",
           icon: "⏳",
           label: "Pending Approval",
-          description: "Waiting for admin approval to activate your subscription"
+          description:
+            "Waiting for admin approval to activate your subscription",
         };
       case "processing":
         return {
           color: "text-blue-600 bg-blue-50 border-blue-200",
           icon: "🔄",
           label: "Processing",
-          description: "Payment verification in progress"
+          description: "Payment verification in progress",
         };
       case "paused":
         return {
           color: "text-yellow-600 bg-yellow-50 border-yellow-200",
           icon: "⏸️",
           label: "Paused",
-          description: "Your subscription is temporarily paused"
+          description: "Your subscription is temporarily paused",
         };
       case "cancellation_requested":
         return {
           color: "text-purple-600 bg-purple-50 border-purple-200",
           icon: "📝",
           label: "Cancellation Requested",
-          description: "Your cancellation request is being processed"
+          description: "Your cancellation request is being processed",
         };
       case "cancelled":
         return {
           color: "text-red-600 bg-red-50 border-red-200",
           icon: "❌",
           label: "Cancelled",
-          description: "Your subscription has been cancelled"
+          description: "Your subscription has been cancelled",
         };
       case "completed":
         return {
           color: "text-blue-600 bg-blue-50 border-blue-200",
           icon: "✅",
           label: "Completed",
-          description: "Your subscription has been completed successfully"
+          description: "Your subscription has been completed successfully",
         };
       case "expired":
         return {
           color: "text-gray-600 bg-gray-50 border-gray-200",
           icon: "⏰",
           label: "Expired",
-          description: "Your subscription has expired"
+          description: "Your subscription has expired",
         };
       default:
         return {
           color: "text-gray-600 bg-gray-50 border-gray-200",
           icon: "❓",
           label: "Unknown",
-          description: "Unknown subscription status"
+          description: "Unknown subscription status",
         };
     }
   };
@@ -512,35 +514,35 @@ const SubscriptionsPage: React.FC = () => {
           color: "text-green-600 bg-green-50 border-green-200",
           icon: "💳",
           label: "Paid",
-          description: "Payment completed successfully"
+          description: "Payment completed successfully",
         };
       case "pending":
         return {
           color: "text-yellow-600 bg-yellow-50 border-yellow-200",
           icon: "⏳",
           label: "Payment Pending",
-          description: "Payment is pending or being verified"
+          description: "Payment is pending or being verified",
         };
       case "failed":
         return {
           color: "text-red-600 bg-red-50 border-red-200",
           icon: "❌",
           label: "Payment Failed",
-          description: "Payment was unsuccessful"
+          description: "Payment was unsuccessful",
         };
       case "refunded":
         return {
           color: "text-purple-600 bg-purple-50 border-purple-200",
           icon: "💰",
           label: "Refunded",
-          description: "Payment has been refunded"
+          description: "Payment has been refunded",
         };
       default:
         return {
           color: "text-gray-600 bg-gray-50 border-gray-200",
           icon: "❓",
           label: "Unknown",
-          description: "Unknown payment status"
+          description: "Unknown payment status",
         };
     }
   };
@@ -550,7 +552,7 @@ const SubscriptionsPage: React.FC = () => {
     return Math.round(
       ((subscription.completedDeliveries + subscription.skippedDeliveries) /
         subscription.totalDeliveries) *
-      100
+        100,
     );
   };
 
@@ -588,20 +590,22 @@ const SubscriptionsPage: React.FC = () => {
           <nav className="flex -mb-px space-x-8">
             <button
               onClick={() => setActiveTab("plans")}
-              className={`py-2 px-1 border-b-2 font-medium text-sm ${activeTab === "plans"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
-                }`}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "plans"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+              }`}
             >
               <Package className="inline-block w-4 h-4 mr-2" />
               Available Plans
             </button>
             <button
               onClick={() => setActiveTab("my-subscriptions")}
-              className={`py-2 px-1 flex items-center justify-center border-b-2 font-medium text-sm ${activeTab === "my-subscriptions"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
-                }`}
+              className={`py-2 px-1 flex items-center justify-center border-b-2 font-medium text-sm ${
+                activeTab === "my-subscriptions"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-400"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300"
+              }`}
             >
               <Users className="w-4 h-4 mr-2 inlinblock" />
               My Subscriptions
@@ -663,10 +667,11 @@ const SubscriptionsPage: React.FC = () => {
                         </h3>
                         <div className="flex items-center justify-center mb-3 space-x-2">
                           <span
-                            className={`px-3 py-1 rounded-full text-sm font-medium ${plan.milkType === "cow"
-                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                              }`}
+                            className={`px-3 py-1 rounded-full text-sm font-medium ${
+                              plan.milkType === "cow"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                            }`}
                           >
                             {plan.milkType} Milk
                           </span>
@@ -767,7 +772,9 @@ const SubscriptionsPage: React.FC = () => {
               <div className="space-y-6">
                 {userSubscriptions.map((subscription) => {
                   const statusInfo = getStatusInfo(subscription.status);
-                  const paymentStatusInfo = getPaymentStatusInfo(subscription.paymentStatus);
+                  const paymentStatusInfo = getPaymentStatusInfo(
+                    subscription.paymentStatus,
+                  );
 
                   return (
                     <div
@@ -781,25 +788,35 @@ const SubscriptionsPage: React.FC = () => {
                           <div className="flex-1">
                             <div className="flex items-center mb-2">
                               <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                                {subscription.subscriptionId?.name || "Unknown Plan"}
+                                {subscription.subscriptionId?.name ||
+                                  "Unknown Plan"}
                               </h3>
                               <span className="ml-3 px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-blue-300">
                                 {subscription.subscriptionId?.volume}
                               </span>
                             </div>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {subscription.subscriptionId?.milkType === "cow" ? "🐄 Cow Milk" : "🐃 Buffalo Milk"} • {subscription.subscriptionId?.duration} days
+                              {subscription.subscriptionId?.milkType === "cow"
+                                ? "🐄 Cow Milk"
+                                : "🐃 Buffalo Milk"}{" "}
+                              • {subscription.subscriptionId?.duration} days
                             </p>
                           </div>
 
                           {/* Status Badges */}
                           <div className="flex flex-col mt-4 space-y-2 lg:mt-0 lg:ml-6 lg:space-y-1">
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusInfo.color}`}>
+                            <div
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${statusInfo.color}`}
+                            >
                               <span className="mr-2">{statusInfo.icon}</span>
                               {statusInfo.label}
                             </div>
-                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${paymentStatusInfo.color}`}>
-                              <span className="mr-2">{paymentStatusInfo.icon}</span>
+                            <div
+                              className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${paymentStatusInfo.color}`}
+                            >
+                              <span className="mr-2">
+                                {paymentStatusInfo.icon}
+                              </span>
                               {paymentStatusInfo.label}
                             </div>
                           </div>
@@ -814,34 +831,53 @@ const SubscriptionsPage: React.FC = () => {
                             {/* Progress Section */}
                             <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-semibold text-gray-900 dark:text-white">Delivery Progress</h4>
+                                <h4 className="font-semibold text-gray-900 dark:text-white">
+                                  Delivery Progress
+                                </h4>
                                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                                  {subscription.completedDeliveries + subscription.skippedDeliveries}/{subscription.totalDeliveries}
+                                  {subscription.completedDeliveries +
+                                    subscription.skippedDeliveries}
+                                  /{subscription.totalDeliveries}
                                 </span>
                               </div>
                               <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                                 <div
                                   className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300 rounded-full"
                                   style={{
-                                    width: `${getProgressPercentage(subscription)}%`,
+                                    width: `${getProgressPercentage(
+                                      subscription,
+                                    )}%`,
                                   }}
                                 ></div>
                               </div>
                               <div className="flex justify-between mt-2 text-xs text-gray-600 dark:text-gray-400">
-                                <span>Completed: {subscription.completedDeliveries}</span>
-                                <span>Skipped: {subscription.skippedDeliveries}</span>
-                                <span>Remaining: {subscription.totalDeliveries - subscription.completedDeliveries - subscription.skippedDeliveries}</span>
+                                <span>
+                                  Completed: {subscription.completedDeliveries}
+                                </span>
+                                <span>
+                                  Skipped: {subscription.skippedDeliveries}
+                                </span>
+                                <span>
+                                  Remaining:{" "}
+                                  {subscription.totalDeliveries -
+                                    subscription.completedDeliveries -
+                                    subscription.skippedDeliveries}
+                                </span>
                               </div>
                             </div>
 
                             {/* Key Dates */}
                             <div className="space-y-3">
-                              <h4 className="font-semibold text-gray-900 dark:text-white">Important Dates</h4>
+                              <h4 className="font-semibold text-gray-900 dark:text-white">
+                                Important Dates
+                              </h4>
                               <div className="space-y-2">
                                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg dark:bg-blue-900/20">
                                   <div className="flex items-center">
                                     <Calendar className="w-4 h-4 mr-2 text-blue-600" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Next Delivery</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                      Next Delivery
+                                    </span>
                                   </div>
                                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                     {formatDate(subscription.nextDeliveryDate)}
@@ -850,7 +886,9 @@ const SubscriptionsPage: React.FC = () => {
                                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-gray-700">
                                   <div className="flex items-center">
                                     <Clock className="w-4 h-4 mr-2 text-gray-600" />
-                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">End Date</span>
+                                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                      End Date
+                                    </span>
                                   </div>
                                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
                                     {formatDate(subscription.endDate)}
@@ -864,23 +902,34 @@ const SubscriptionsPage: React.FC = () => {
                           <div className="space-y-4">
                             {/* Payment Information */}
                             <div className="p-4 bg-green-50 rounded-lg dark:bg-green-900/20">
-                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">Payment Details</h4>
+                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">
+                                Payment Details
+                              </h4>
                               <div className="space-y-2">
                                 <div className="flex justify-between">
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">Amount:</span>
+                                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    Amount:
+                                  </span>
                                   <span className="text-lg font-bold text-gray-900 dark:text-white">
-                                    ₹{subscription.paymentInfo?.amount?.toLocaleString() || 0}
+                                    ₹
+                                    {subscription.paymentInfo?.amount?.toLocaleString() ||
+                                      0}
                                   </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-sm text-gray-600 dark:text-gray-400">Method:</span>
+                                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    Method:
+                                  </span>
                                   <span className="text-sm font-medium text-gray-900 dark:text-white capitalize">
-                                    {subscription.paymentInfo?.paymentMethod || "N/A"}
+                                    {subscription.paymentInfo?.paymentMethod ||
+                                      "N/A"}
                                   </span>
                                 </div>
                                 {subscription.discountApplied > 0 && (
                                   <div className="flex justify-between">
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">Discount:</span>
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                      Discount:
+                                    </span>
                                     <span className="text-sm font-medium text-green-600">
                                       ₹{subscription.discountApplied}
                                     </span>
@@ -891,24 +940,34 @@ const SubscriptionsPage: React.FC = () => {
 
                             {/* Delivery Information */}
                             <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
-                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">Delivery Details</h4>
+                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">
+                                Delivery Details
+                              </h4>
                               <div className="space-y-2">
                                 <div className="flex items-start">
                                   <MapPin className="w-4 h-4 mr-2 mt-0.5 text-gray-600 flex-shrink-0" />
                                   <div className="text-sm text-gray-700 dark:text-gray-300">
-                                    <div className="font-medium">{subscription.deliveryAddress?.city}, {subscription.deliveryAddress?.state}</div>
-                                    <div className="text-gray-600 dark:text-gray-400">{subscription.deliveryAddress?.pincode}</div>
+                                    <div className="font-medium">
+                                      {subscription.deliveryAddress?.city},{" "}
+                                      {subscription.deliveryAddress?.state}
+                                    </div>
+                                    <div className="text-gray-600 dark:text-gray-400">
+                                      {subscription.deliveryAddress?.pincode}
+                                    </div>
                                   </div>
                                 </div>
                                 <div className="flex items-center">
                                   <Clock className="w-4 h-4 mr-2 text-gray-600" />
                                   <span className="text-sm text-gray-700 dark:text-gray-300 capitalize">
-                                    {subscription.preferredDeliveryTime} delivery
+                                    {subscription.preferredDeliveryTime}{" "}
+                                    delivery
                                   </span>
                                 </div>
                                 {subscription.deliveryInstructions && (
                                   <div className="flex items-start">
-                                    <span className="w-4 h-4 mr-2 mt-0.5 text-gray-600">📝</span>
+                                    <span className="w-4 h-4 mr-2 mt-0.5 text-gray-600">
+                                      📝
+                                    </span>
                                     <span className="text-sm text-gray-700 dark:text-gray-300">
                                       {subscription.deliveryInstructions}
                                     </span>
@@ -919,19 +978,31 @@ const SubscriptionsPage: React.FC = () => {
 
                             {/* Order Information */}
                             <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
-                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">Order Information</h4>
+                              <h4 className="mb-3 font-semibold text-gray-900 dark:text-white">
+                                Order Information
+                              </h4>
                               <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Order ID:</span>
-                                  <span className="font-mono text-gray-900 dark:text-white">{subscription.orderId}</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Order ID:
+                                  </span>
+                                  <span className="font-mono text-gray-900 dark:text-white">
+                                    {subscription.orderId}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
-                                  <span className="text-gray-600 dark:text-gray-400">Created:</span>
-                                  <span className="text-gray-900 dark:text-white">{formatDate(subscription.createdAt)}</span>
+                                  <span className="text-gray-600 dark:text-gray-400">
+                                    Created:
+                                  </span>
+                                  <span className="text-gray-900 dark:text-white">
+                                    {formatDate(subscription.createdAt)}
+                                  </span>
                                 </div>
                                 {subscription.autoRenewal && (
                                   <div className="flex items-center justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Auto Renewal:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">
+                                      Auto Renewal:
+                                    </span>
                                     <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-green-300">
                                       Enabled
                                     </span>
@@ -947,20 +1018,27 @@ const SubscriptionsPage: React.FC = () => {
                           <div className="flex items-start">
                             <span className="mr-3 mt-1">ℹ️</span>
                             <div>
-                              <h5 className="font-medium text-gray-900 dark:text-white mb-1">Status Information</h5>
-                              <p className="text-sm text-gray-700 dark:text-gray-300">{statusInfo.description}</p>
-                              {subscription.status === "processing" && subscription.paymentStatus === "pending" && (
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                  Your payment is being verified. This usually takes a few minutes.
-                                </p>
-                              )}
+                              <h5 className="font-medium text-gray-900 dark:text-white mb-1">
+                                Status Information
+                              </h5>
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                {statusInfo.description}
+                              </p>
+                              {subscription.status === "processing" &&
+                                subscription.paymentStatus === "pending" && (
+                                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    Your payment is being verified. This usually
+                                    takes a few minutes.
+                                  </p>
+                                )}
                             </div>
                           </div>
                         </div>
 
                         {/* Actions */}
                         <div className="flex flex-col mt-6 space-y-2 sm:flex-row sm:space-y-0 sm:space-x-3">
-                          {(subscription.status === "active" || subscription.status === "paused") && (
+                          {(subscription.status === "active" ||
+                            subscription.status === "paused") && (
                             <button
                               onClick={() => openCancelModal(subscription)}
                               className="px-4 py-2 text-sm font-medium text-red-600 border border-red-300 rounded-lg hover:bg-red-50 dark:border-red-600 dark:text-red-400 dark:hover:bg-red-900/20"
@@ -968,11 +1046,12 @@ const SubscriptionsPage: React.FC = () => {
                               Cancel Subscription
                             </button>
                           )}
-                          {subscription.status === "pending" && subscription.paymentStatus === "pending" && (
-                            <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
-                              Complete Payment
-                            </button>
-                          )}
+                          {subscription.status === "pending" &&
+                            subscription.paymentStatus === "pending" && (
+                              <button className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                                Complete Payment
+                              </button>
+                            )}
                           {subscription.status === "processing" && (
                             <div className="flex items-center px-4 py-2 text-sm text-blue-600 bg-blue-50 rounded-lg dark:bg-blue-900/20">
                               <div className="w-4 h-4 mr-2 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -1527,96 +1606,96 @@ const SubscriptionsPage: React.FC = () => {
                   {/* Bank Account Details */}
                   {cancelForm.refundDetails.refundMethod ===
                     "bank_transfer" && (
-                      <>
-                        <div className="mb-3">
-                          <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Account Holder Name *
-                          </label>
-                          <input
-                            type="text"
-                            value={cancelForm.refundDetails.accountHolderName}
-                            onChange={(e) =>
-                              setCancelForm((prev) => ({
-                                ...prev,
-                                refundDetails: {
-                                  ...prev.refundDetails,
-                                  accountHolderName: e.target.value,
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            required
-                            placeholder="Enter account holder name"
-                          />
-                        </div>
+                    <>
+                      <div className="mb-3">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Account Holder Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={cancelForm.refundDetails.accountHolderName}
+                          onChange={(e) =>
+                            setCancelForm((prev) => ({
+                              ...prev,
+                              refundDetails: {
+                                ...prev.refundDetails,
+                                accountHolderName: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          required
+                          placeholder="Enter account holder name"
+                        />
+                      </div>
 
-                        <div className="mb-3">
-                          <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Bank Name *
-                          </label>
-                          <input
-                            type="text"
-                            value={cancelForm.refundDetails.bankName}
-                            onChange={(e) =>
-                              setCancelForm((prev) => ({
-                                ...prev,
-                                refundDetails: {
-                                  ...prev.refundDetails,
-                                  bankName: e.target.value,
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            required
-                            placeholder="Enter bank name"
-                          />
-                        </div>
+                      <div className="mb-3">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Bank Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={cancelForm.refundDetails.bankName}
+                          onChange={(e) =>
+                            setCancelForm((prev) => ({
+                              ...prev,
+                              refundDetails: {
+                                ...prev.refundDetails,
+                                bankName: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          required
+                          placeholder="Enter bank name"
+                        />
+                      </div>
 
-                        <div className="mb-3">
-                          <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Account Number *
-                          </label>
-                          <input
-                            type="text"
-                            value={cancelForm.refundDetails.accountNumber}
-                            onChange={(e) =>
-                              setCancelForm((prev) => ({
-                                ...prev,
-                                refundDetails: {
-                                  ...prev.refundDetails,
-                                  accountNumber: e.target.value,
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            required
-                            placeholder="Enter account number"
-                          />
-                        </div>
+                      <div className="mb-3">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Account Number *
+                        </label>
+                        <input
+                          type="text"
+                          value={cancelForm.refundDetails.accountNumber}
+                          onChange={(e) =>
+                            setCancelForm((prev) => ({
+                              ...prev,
+                              refundDetails: {
+                                ...prev.refundDetails,
+                                accountNumber: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          required
+                          placeholder="Enter account number"
+                        />
+                      </div>
 
-                        <div className="mb-3">
-                          <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            IFSC Code *
-                          </label>
-                          <input
-                            type="text"
-                            value={cancelForm.refundDetails.ifscCode}
-                            onChange={(e) =>
-                              setCancelForm((prev) => ({
-                                ...prev,
-                                refundDetails: {
-                                  ...prev.refundDetails,
-                                  ifscCode: e.target.value,
-                                },
-                              }))
-                            }
-                            className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
-                            required
-                            placeholder="Enter IFSC code"
-                          />
-                        </div>
-                      </>
-                    )}
+                      <div className="mb-3">
+                        <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                          IFSC Code *
+                        </label>
+                        <input
+                          type="text"
+                          value={cancelForm.refundDetails.ifscCode}
+                          onChange={(e) =>
+                            setCancelForm((prev) => ({
+                              ...prev,
+                              refundDetails: {
+                                ...prev.refundDetails,
+                                ifscCode: e.target.value,
+                              },
+                            }))
+                          }
+                          className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-md dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                          required
+                          placeholder="Enter IFSC code"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Buttons */}

@@ -2,14 +2,14 @@ import { seedSubscriptions } from "./seedSubscriptions.js";
 
 export const initializeDatabase = async () => {
   try {
-    console.log('🚀 Initializing database...');
-    
+    console.log("🚀 Initializing database...");
+
     // Seed subscription plans
     await seedSubscriptions();
-    
-    console.log('✅ Database initialization completed successfully!');
+
+    console.log("✅ Database initialization completed successfully!");
   } catch (error) {
-    console.error('❌ Database initialization failed:', error);
+    console.error("❌ Database initialization failed:", error);
     throw error;
   }
 };
@@ -20,7 +20,7 @@ export const manualSeed = async () => {
     await initializeDatabase();
     process.exit(0);
   } catch (error) {
-    console.error('Seeding failed:', error);
+    console.error("Seeding failed:", error);
     process.exit(1);
   }
-}; 
+};

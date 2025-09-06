@@ -31,13 +31,13 @@ const defaultCategories = [
 export const seedCategories = async () => {
   try {
     console.log("🌱 Seeding default categories...");
-    
+
     // Wait a bit for connection to fully stabilize
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
     // Check if categories already exist
     const existingCategories = await Category.find({}).limit(1);
-    
+
     if (existingCategories.length > 0) {
       console.log("📦 Categories already exist, skipping seed");
       console.log(`   Found: ${existingCategories[0].name}`);
@@ -45,7 +45,7 @@ export const seedCategories = async () => {
     }
 
     console.log("📝 Creating default categories...");
-    
+
     // Insert default categories one by one to avoid bulk insert issues
     const createdCategories = [];
     for (const categoryData of defaultCategories) {
@@ -55,11 +55,15 @@ export const seedCategories = async () => {
         createdCategories.push(saved);
         console.log(`   ✓ Created: ${saved.name}`);
       } catch (error) {
-        console.log(`   ⚠️ Failed to create ${categoryData.name}: ${error.message}`);
+        console.log(
+          `   ⚠️ Failed to create ${categoryData.name}: ${error.message}`,
+        );
       }
     }
-    
-    console.log(`✅ Successfully seeded ${createdCategories.length} categories`);
+
+    console.log(
+      `✅ Successfully seeded ${createdCategories.length} categories`,
+    );
     return createdCategories;
   } catch (error) {
     console.error("❌ Error seeding categories:", error.message);

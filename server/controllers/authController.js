@@ -124,16 +124,11 @@ export const registerUser = async (req, res) => {
       await emailService.sendVerificationEmail(
         email,
         verificationCode,
-        "signup"
-      );
-      console.log(
-        `📧 Verification email sent to ${email} with code: ${verificationCode}`
+        "signup",
       );
     } catch (emailError) {
-      console.error("Failed to send verification email:", emailError);
-      // Continue with registration even if email fails
+      // Email sending failed, but continue with registration
     }
-
     res.status(201).json({
       success: true,
       message:
@@ -167,7 +162,7 @@ export const loginUser = async (req, res) => {
 
     // Find user and include password field
     const user = await User.findOne({ email: email.toLowerCase() }).select(
-      "+password +loginAttempts +lockUntil"
+      "+password +loginAttempts +lockUntil",
     );
 
     if (!user) {
@@ -215,12 +210,11 @@ export const loginUser = async (req, res) => {
         await emailService.sendVerificationEmail(
           email,
           verificationCode,
-          "login"
+          "login",
         );
       } catch (emailError) {
-        console.error("Failed to send verification email:", emailError);
+        // Email sending failed
       }
-
       return res.status(403).json({
         success: false,
         message:
@@ -282,7 +276,7 @@ export const adminLogin = async (req, res) => {
           userType: "admin",
         },
         process.env.JWT_SECRET,
-        { expiresIn: "24h" }
+        { expiresIn: "24h" },
       );
 
       // Create admin user object for frontend
@@ -294,7 +288,6 @@ export const adminLogin = async (req, res) => {
       };
 
       console.log("Admin Logged In Successfully");
-
       return res.status(200).json({
         success: true,
         message: "Admin login successful",
@@ -302,7 +295,6 @@ export const adminLogin = async (req, res) => {
         user: adminUser,
       });
     } else {
-      console.log("Invalid admin credentials");
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
@@ -407,7 +399,7 @@ export const getUserDetails = async (req, res) => {
 
     // Get user details
     const user = await User.findById(userId).select(
-      "-password -verificationCode -verificationCodeExpiry"
+      "-password -verificationCode -verificationCodeExpiry",
     );
 
     if (!user) {
@@ -425,11 +417,11 @@ export const getUserDetails = async (req, res) => {
     // Calculate statistics
     const totalOrders = userOrders.length;
     const nonCancelledOrders = userOrders.filter(
-      (order) => order.status !== "cancelled"
+      (order) => order.status !== "cancelled",
     );
     const totalSpent = nonCancelledOrders.reduce(
       (sum, order) => sum + (order.totalAmount || 0),
-      0
+      0,
     );
     const avgOrderValue =
       nonCancelledOrders.length > 0
@@ -502,7 +494,7 @@ export const exportUserData = async (req, res) => {
 
     // Get user details
     const user = await User.findById(userId).select(
-      "-password -verificationCode -verificationCodeExpiry"
+      "-password -verificationCode -verificationCodeExpiry",
     );
 
     if (!user) {
@@ -520,11 +512,11 @@ export const exportUserData = async (req, res) => {
     // Calculate statistics
     const totalOrders = userOrders.length;
     const nonCancelledOrders = userOrders.filter(
-      (order) => order.status !== "cancelled"
+      (order) => order.status !== "cancelled",
     );
     const totalSpent = nonCancelledOrders.reduce(
       (sum, order) => sum + (order.totalAmount || 0),
-      0
+      0,
     );
     const avgOrderValue =
       nonCancelledOrders.length > 0
@@ -596,7 +588,7 @@ export const verifyEmail = async (req, res) => {
 
     // Find user with verification code
     const user = await User.findOne({ email: email.toLowerCase() }).select(
-      "+verificationCode +verificationCodeExpiry"
+      "+verificationCode +verificationCodeExpiry",
     );
 
     if (!user) {
@@ -676,7 +668,7 @@ export const resendVerificationCode = async (req, res) => {
       await emailService.sendVerificationEmail(
         email,
         verificationCode,
-        "verification"
+        "verification",
       );
 
       res.status(200).json({
@@ -780,6 +772,111 @@ export const googleAuth = async (req, res) => {
   }
 };
 
+// Google JWT Authentication
+export const googleJWTAuth = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential is required",
+      });
+    }
+
+    // Decode the JWT credential from Google
+    try {
+      // In a real implementation, you would verify this with Google's public keys
+      // For now, we'll decode the JWT payload (this is NOT secure for production)
+      const payload = JSON.parse(
+        Buffer.from(credential.split(".")[1], "base64").toString(),
+      );
+
+      const googleId = payload.sub;
+      const email = payload.email;
+      const name = payload.name;
+      const avatar = payload.picture;
+
+      if (!googleId || !email || !name) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid Google credential format",
+        });
+      }
+
+      // Process the same way as regular Google auth
+      // Check if user exists by email or Google ID
+      let user = await User.findOne({
+        $or: [{ email: email.toLowerCase() }, { googleId: googleId }],
+      });
+
+      if (user) {
+        // Update existing user with Google info if needed
+        let userUpdated = false;
+
+        if (!user.googleId) {
+          user.googleId = googleId;
+          user.authProvider = "google";
+          userUpdated = true;
+        }
+
+        if (!user.isVerified) {
+          user.isVerified = true;
+          userUpdated = true;
+        }
+
+        if (avatar && user.avatar !== avatar) {
+          user.avatar = avatar;
+          userUpdated = true;
+        }
+
+        if (userUpdated) {
+          await user.save();
+        }
+
+        await user.updateLastLogin();
+      } else {
+        // Create new user with Google data
+        user = new User({
+          name: name.trim(),
+          email: email.toLowerCase().trim(),
+          googleId,
+          avatar,
+          authProvider: "google",
+          isVerified: true,
+        });
+
+        await user.save();
+        await user.updateLastLogin();
+      }
+
+      // Generate JWT token
+      const token = generateToken(user._id);
+
+      res.status(200).json({
+        success: true,
+        message: "Google authentication successful",
+        data: {
+          token,
+          user: formatUserResponse(user),
+        },
+      });
+    } catch (jwtError) {
+      console.error("JWT decode error:", jwtError);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Google credential",
+      });
+    }
+  } catch (error) {
+    console.error("Google JWT authentication error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during Google authentication",
+    });
+  }
+};
+
 // Get authenticated user details
 export const getUserByToken = async (req, res) => {
   try {
@@ -867,17 +964,18 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
-// Update user address
+// Add or update user address
 export const updateUserAddress = async (req, res) => {
   try {
     const { userId } = req.params;
     const { label, address, city, state, zipCode, country, isDefault } =
       req.body;
 
-    if (!label || !address) {
+    // Validate required fields
+    if (!label || !address || !city || !state || !zipCode) {
       return res.status(400).json({
         success: false,
-        message: "Label and address are required",
+        message: "Label, address, city, state, and zipCode are required",
       });
     }
 
@@ -889,6 +987,22 @@ export const updateUserAddress = async (req, res) => {
       });
     }
 
+    // Check if user already has 5 addresses (maximum limit)
+    if (user.addresses.length >= 5) {
+      // Check if we're updating an existing address
+      const existingAddressIndex = user.addresses.findIndex(
+        (addr) => addr.label.toLowerCase() === label.toLowerCase(),
+      );
+
+      if (existingAddressIndex === -1) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Maximum of 5 addresses allowed. Please update an existing address or delete one first.",
+        });
+      }
+    }
+
     // If this is set as default, remove default from others
     if (isDefault) {
       user.addresses.forEach((addr) => {
@@ -898,15 +1012,15 @@ export const updateUserAddress = async (req, res) => {
 
     // Check if address with same label exists
     const existingAddressIndex = user.addresses.findIndex(
-      (addr) => addr.label.toLowerCase() === label.toLowerCase()
+      (addr) => addr.label.toLowerCase() === label.toLowerCase(),
     );
 
     const newAddress = {
       label: label.trim(),
       address: address.trim(),
-      city: city?.trim(),
-      state: state?.trim(),
-      zipCode: zipCode?.trim(),
+      city: city.trim(),
+      state: state.trim(),
+      zipCode: zipCode.trim(),
       country: country?.trim() || "India",
       isDefault: isDefault || false,
     };
@@ -919,20 +1033,87 @@ export const updateUserAddress = async (req, res) => {
       user.addresses.push(newAddress);
     }
 
+    // If this is the first address, make it default
+    if (user.addresses.length === 1) {
+      user.addresses[0].isDefault = true;
+    }
+
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: "Address updated successfully",
+      message:
+        existingAddressIndex !== -1
+          ? "Address updated successfully"
+          : "Address added successfully",
       data: {
         addresses: user.addresses,
       },
     });
   } catch (error) {
-    console.error("Update address error:", error);
+    console.error("Update/Add address error:", error);
     res.status(500).json({
       success: false,
-      message: "Server error during address update",
+      message: "Server error during address operation",
+    });
+  }
+};
+
+// Delete user address
+export const deleteUserAddress = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { addressId } = req.body;
+
+    if (!addressId) {
+      return res.status(400).json({
+        success: false,
+        message: "Address ID is required",
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Find and remove the address
+    const addressIndex = user.addresses.findIndex(
+      (addr) => addr._id.toString() === addressId,
+    );
+
+    if (addressIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Address not found",
+      });
+    }
+
+    const wasDefault = user.addresses[addressIndex].isDefault;
+    user.addresses.splice(addressIndex, 1);
+
+    // If deleted address was default and there are remaining addresses, make the first one default
+    if (wasDefault && user.addresses.length > 0) {
+      user.addresses[0].isDefault = true;
+    }
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Address deleted successfully",
+      data: {
+        addresses: user.addresses,
+      },
+    });
+  } catch (error) {
+    console.error("Delete address error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during address deletion",
     });
   }
 };

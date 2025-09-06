@@ -17,37 +17,15 @@ class EmailService {
     const emailUser = process.env.EMAIL_USER;
     const emailPass = process.env.EMAIL_PASS;
 
-    console.log("🔍 Checking email configuration...");
-    console.log(
-      `📧 EMAIL_USER: ${
-        emailUser
-          ? `${emailUser.substring(0, 3)}***@${emailUser.split("@")[1]}`
-          : "NOT SET"
-      }`
-    );
-    console.log(`🔑 EMAIL_PASS: ${emailPass ? "***SET***" : "NOT SET"}`);
-
     if (
       !emailUser ||
       !emailPass ||
       emailUser === "your-email@gmail.com" ||
       emailPass === "your-app-password"
     ) {
-      console.warn(
-        "⚠️ Email configuration not properly set. Please configure EMAIL_USER and EMAIL_PASS in .env file"
-      );
-      console.warn(
-        "📧 Email verification will be in MOCK mode - codes will appear in console"
-      );
-      console.warn("📝 To fix this:");
-      console.warn(
-        "   1. Create a Gmail App Password: https://myaccount.google.com/apppasswords"
-      );
-      console.warn("   2. Set EMAIL_USER=your-gmail@gmail.com in .env");
-      console.warn("   3. Set EMAIL_PASS=your-16-digit-app-password in .env");
+      // Email configuration not properly set - use mock mode
       this.isMockMode = true;
     } else {
-      console.log("📧 Email service initialized with Gmail");
       this.isMockMode = false;
     }
 
@@ -92,25 +70,10 @@ class EmailService {
   // Test the email connection
   async testConnection() {
     try {
-      console.log("🔄 Testing email connection...");
       await this.transporter.verify();
-      console.log("✅ Email service connection successful!");
+      // Connection successful - email service is ready
     } catch (error) {
-      console.error("❌ Email service connection failed:", error.message);
-      console.error("🔧 Troubleshooting tips:");
-      console.error(
-        "   1. Make sure you're using a Gmail App Password (not your regular password)"
-      );
-      console.error(
-        "   2. Check if 2-factor authentication is enabled on your Gmail account"
-      );
-      console.error("   3. Verify EMAIL_USER and EMAIL_PASS in your .env file");
-      console.error(
-        "   4. Make sure there are no spaces in your environment variables"
-      );
-
       // Switch to mock mode if connection fails
-      console.warn("📧 Switching to MOCK mode due to connection failure");
       this.isMockMode = true;
     }
   }
@@ -121,22 +84,9 @@ class EmailService {
     this.initialize();
 
     try {
-      console.log(
-        `📧 Attempting to send verification email to ${email} with code: ${code}`
-      );
-      console.log(`📝 Purpose: ${purpose}, Mock Mode: ${this.isMockMode}`);
-
       if (this.isMockMode) {
         // Mock mode - just log the code
-        console.log(`📧 MOCK EMAIL to ${email}`);
-        console.log(`📋 Subject: ${this.getEmailSubject(purpose)}`);
-        console.log(`🔢 Verification Code: ${code}`);
-        console.log(`⏰ Expires in: 10 minutes`);
-        console.log(`📝 Purpose: ${purpose}`);
-        console.log(
-          "🔧 To enable real emails, configure EMAIL_USER and EMAIL_PASS in .env file"
-        );
-
+        console.log(`📧 Verification code for ${email}: ${code}`);
         return {
           success: true,
           messageId: `mock_email_${Date.now()}`,
@@ -158,11 +108,6 @@ class EmailService {
       console.log(`📮 Sending email via Gmail...`);
       const result = await this.transporter.sendMail(mailOptions);
 
-      console.log(`✅ Verification email sent successfully!`);
-      console.log(`📧 To: ${email}`);
-      console.log(`🆔 Message ID: ${result.messageId}`);
-      console.log(`🔢 Code: ${code}`);
-
       return {
         success: true,
         messageId: result.messageId,
@@ -176,13 +121,13 @@ class EmailService {
         console.error("🔑 Authentication Error Details:");
         console.error("   - Your Gmail credentials are incorrect");
         console.error(
-          "   - Make sure you're using an App Password, not your regular Gmail password"
+          "   - Make sure you're using an App Password, not your regular Gmail password",
         );
         console.error(
-          "   - Generate App Password: https://myaccount.google.com/apppasswords"
+          "   - Generate App Password: https://myaccount.google.com/apppasswords",
         );
         throw new Error(
-          "Email authentication failed. Please check your Gmail App Password."
+          "Email authentication failed. Please check your Gmail App Password.",
         );
       } else if (error.code === "ENOTFOUND") {
         console.error("🌐 Network Error Details:");
@@ -198,10 +143,10 @@ class EmailService {
         console.error("🔐 Gmail Security Error:");
         console.error("   - Invalid credentials or app password");
         console.error(
-          "   - Make sure 2FA is enabled and you're using an App Password"
+          "   - Make sure 2FA is enabled and you're using an App Password",
         );
         throw new Error(
-          "Gmail authentication rejected. Check your App Password."
+          "Gmail authentication rejected. Check your App Password.",
         );
       } else {
         console.error("❓ Unknown Error Details:", {
@@ -221,23 +166,10 @@ class EmailService {
 
     try {
       const adminEmail = process.env.ADMIN_EMAIL || "webbites79@gmail.com";
-      console.log(`📧 Sending contact form data to admin: ${adminEmail}`);
-      console.log(`📝 Form data:`, formData);
 
       if (this.isMockMode) {
         // Mock mode - just log the form data
-        console.log(`📧 MOCK CONTACT FORM EMAIL to ${adminEmail}`);
-        console.log(
-          `📋 Subject: New Contact Form Submission - Legends Milk Cart`
-        );
-        console.log(`👤 Name: ${formData.name}`);
-        console.log(`📞 Phone: ${formData.phone}`);
-        console.log(`💬 Message: ${formData.message}`);
-        console.log(`📅 Submitted: ${new Date().toLocaleString()}`);
-        console.log(
-          "🔧 To enable real emails, configure EMAIL_USER and EMAIL_PASS in .env file"
-        );
-
+        console.log(`📧 New contact form submission from ${formData.name}`);
         return {
           success: true,
           messageId: `mock_contact_email_${Date.now()}`,
@@ -258,11 +190,6 @@ class EmailService {
 
       console.log(`📮 Sending contact form email to admin...`);
       const result = await this.transporter.sendMail(mailOptions);
-
-      console.log(`✅ Contact form email sent successfully!`);
-      console.log(`📧 To: ${adminEmail}`);
-      console.log(`🆔 Message ID: ${result.messageId}`);
-      console.log(`👤 From: ${formData.name}`);
 
       return {
         success: true,
@@ -610,10 +537,10 @@ class EmailService {
       </div>
       
       <div class="action-buttons">
-        <a href="https://wa.me/91${formData.phone.replace(/\D/g, '')}" class="action-btn whatsapp-btn">
+        <a href="https://wa.me/91${formData.phone.replace(/\D/g, "")}" class="action-btn whatsapp-btn">
           📱 Reply via WhatsApp
         </a>
-        <a href="tel:+91${formData.phone.replace(/\D/g, '')}" class="action-btn call-btn">
+        <a href="tel:+91${formData.phone.replace(/\D/g, "")}" class="action-btn call-btn">
           📞 Call Customer
         </a>
       </div>
@@ -670,7 +597,7 @@ class EmailService {
       const result = await this.sendVerificationEmail(
         testEmail,
         "123456",
-        "test"
+        "test",
       );
       console.log("✅ Test email completed:", result);
       return result;

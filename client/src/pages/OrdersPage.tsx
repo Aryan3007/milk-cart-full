@@ -124,7 +124,7 @@ export default function OrdersPage() {
   const [cancellingOrder, setCancellingOrder] = useState<string | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [paymentSession, setPaymentSession] = useState<PaymentSession | null>(
-    null
+    null,
   );
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -165,7 +165,7 @@ export default function OrdersPage() {
           setPaymentSession(null);
           setExpiryTime(null);
           setError(
-            "Payment session expired. Please create a new payment session."
+            "Payment session expired. Please create a new payment session.",
           );
           clearInterval(timer);
         }
@@ -248,7 +248,7 @@ export default function OrdersPage() {
             canBeCancelled: order.canBeCancelled,
             cancellationMessage: order.cancellationMessage,
             paymentStatus: order.paymentStatus,
-          })
+          }),
         );
         setOrders(formattedOrders);
         console.log("Orders loaded successfully:", formattedOrders.length);
@@ -277,7 +277,7 @@ export default function OrdersPage() {
         console.log("Unpaid orders loaded:", response.data.unpaidOrders.length);
         // Auto-select all orders by default
         setSelectedOrders(
-          response.data.unpaidOrders.map((order: UnpaidOrder) => order.id)
+          response.data.unpaidOrders.map((order: UnpaidOrder) => order.id),
         );
       } else {
         console.error("Failed to fetch unpaid orders:", response.message);
@@ -311,7 +311,7 @@ export default function OrdersPage() {
         setPaymentSession(response.data);
         setExpiryTime(Date.now() + response.data.expiresIn * 1000);
         successToastHandler(
-          "Payment session created! Scan QR code to pay via UPI"
+          "Payment session created! Scan QR code to pay via UPI",
         );
       } else {
         setError(response.message || "Failed to create payment session");
@@ -339,12 +339,12 @@ export default function OrdersPage() {
         {
           upiTransactionId: upiTransactionId.trim(),
           upiReferenceNumber: upiReference.trim(),
-        }
+        },
       );
 
       if (response.success) {
         successToastHandler(
-          "Payment marked as completed! It will be verified by admin within 24 hours."
+          "Payment marked as completed! It will be verified by admin within 24 hours.",
         );
         setPaymentSession(null);
         setExpiryTime(null);
@@ -375,15 +375,15 @@ export default function OrdersPage() {
     try {
       const response = await ApiService.cancelOrder(
         orderId,
-        "Cancelled by user"
+        "Cancelled by user",
       );
       if (response.success) {
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order.id === orderId
               ? { ...order, status: "CANCELLED" as Order["status"] }
-              : order
-          )
+              : order,
+          ),
         );
         successToastHandler("Order cancelled successfully");
       } else {
@@ -427,7 +427,7 @@ export default function OrdersPage() {
     setSelectedOrders((prev) =>
       prev.includes(orderId)
         ? prev.filter((id) => id !== orderId)
-        : [...prev, orderId]
+        : [...prev, orderId],
     );
   };
 
@@ -486,12 +486,12 @@ export default function OrdersPage() {
 
   const getTabCounts = () => {
     const paid = orders.filter(
-      (order) => order.paymentStatus === "paid"
+      (order) => order.paymentStatus === "paid",
     ).length;
     const unpaid = orders.filter(
       (order) =>
         (order.status === "DELIVERED" || order.status === "CONFIRMED") &&
-        order.paymentStatus !== "paid"
+        order.paymentStatus !== "paid",
     ).length;
     const pending = orders.filter((order) => order.status === "PENDING").length;
 
@@ -515,14 +515,14 @@ export default function OrdersPage() {
 
     if (statusFilter !== "all") {
       filtered = filtered.filter(
-        (order) => order.status.toLowerCase() === statusFilter
+        (order) => order.status.toLowerCase() === statusFilter,
       );
     }
 
     switch (activeTab) {
       case "paid": {
         const paidOrders = filtered.filter(
-          (order) => order.paymentStatus === "paid"
+          (order) => order.paymentStatus === "paid",
         );
         console.log("Paid orders:", paidOrders.length);
         return paidOrders;
@@ -531,14 +531,14 @@ export default function OrdersPage() {
         const unpaidFiltered = filtered.filter(
           (order) =>
             (order.status === "DELIVERED" || order.status === "CONFIRMED") &&
-            order.paymentStatus !== "paid"
+            order.paymentStatus !== "paid",
         );
         console.log("Unpaid filtered orders:", unpaidFiltered.length);
         return unpaidFiltered;
       }
       case "pending": {
         const pendingOrders = filtered.filter(
-          (order) => order.status === "PENDING"
+          (order) => order.status === "PENDING",
         );
         console.log("Pending orders:", pendingOrders.length);
         return pendingOrders;
@@ -954,10 +954,10 @@ export default function OrdersPage() {
                                 <span>
                                   {order.deliveredAt
                                     ? `Delivered: ${formatDate(
-                                        order.deliveredAt
+                                        order.deliveredAt,
                                       )}`
                                     : `Confirmed: ${formatDate(
-                                        order.confirmedAt!
+                                        order.confirmedAt!,
                                       )}`}
                                 </span>
                               </div>
@@ -1035,19 +1035,19 @@ export default function OrdersPage() {
                 {activeTab === "unpaid"
                   ? "No payment due"
                   : activeTab === "paid"
-                  ? "No paid orders"
-                  : activeTab === "pending"
-                  ? "No pending orders"
-                  : "No orders yet"}
+                    ? "No paid orders"
+                    : activeTab === "pending"
+                      ? "No pending orders"
+                      : "No orders yet"}
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-8">
                 {activeTab === "unpaid"
                   ? "All your approved orders have been paid!"
                   : activeTab === "paid"
-                  ? "You haven't made any payments yet."
-                  : activeTab === "pending"
-                  ? "No orders are currently awaiting admin approval."
-                  : "You haven't placed any orders yet. Start shopping to see your orders here."}
+                    ? "You haven't made any payments yet."
+                    : activeTab === "pending"
+                      ? "No orders are currently awaiting admin approval."
+                      : "You haven't placed any orders yet. Start shopping to see your orders here."}
               </p>
               {activeTab === "all" && (
                 <motion.button
@@ -1078,7 +1078,7 @@ export default function OrdersPage() {
                         </h3>
                         <div
                           className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                            order.status
+                            order.status,
                           )}`}
                         >
                           {getStatusIcon(order.status)}
@@ -1087,7 +1087,7 @@ export default function OrdersPage() {
                         {order.paymentStatus && (
                           <div
                             className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm font-medium ${getPaymentStatusColor(
-                              order.paymentStatus
+                              order.paymentStatus,
                             )}`}
                           >
                             <CreditCard className="w-4 h-4" />
@@ -1342,7 +1342,7 @@ export default function OrdersPage() {
                     <motion.button
                       onClick={() =>
                         setExpandedOrder(
-                          expandedOrder === order.id ? null : order.id
+                          expandedOrder === order.id ? null : order.id,
                         )
                       }
                       className="flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium transition-colors"
@@ -1403,7 +1403,7 @@ export default function OrdersPage() {
                                     year: "numeric",
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  }
+                                  },
                                 )}
                               </span>
                             </div>
@@ -1420,7 +1420,7 @@ export default function OrdersPage() {
                                       year: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                    }
+                                    },
                                   )}
                                 </span>
                               </div>
@@ -1438,7 +1438,7 @@ export default function OrdersPage() {
                                       year: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                    }
+                                    },
                                   )}
                                 </span>
                               </div>
@@ -1456,7 +1456,7 @@ export default function OrdersPage() {
                                       year: "numeric",
                                       hour: "2-digit",
                                       minute: "2-digit",
-                                    }
+                                    },
                                   )}
                                 </span>
                               </div>

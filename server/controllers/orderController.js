@@ -3,7 +3,12 @@ import Product from "../models/Product.js";
 import Cart from "../models/cart.js";
 import DeliveryBoy from "../models/DeliveryBoy.js";
 import UserDeliveryAssignment from "../models/UserDeliveryAssignment.js";
-import { validateDeliverySlot, getAvailableDeliverySlots, getDateLabel, getDeliveryTimeSlot } from "../utils/deliveryScheduling.js";
+import {
+  validateDeliverySlot,
+  getAvailableDeliverySlots,
+  getDateLabel,
+  getDeliveryTimeSlot,
+} from "../utils/deliveryScheduling.js";
 
 // Create a new order
 export const createOrder = async (req, res) => {
@@ -109,7 +114,10 @@ export const createOrder = async (req, res) => {
     }
 
     // Validate delivery date and timing using the new scheduling system
-    const deliveryValidation = validateDeliverySlot(deliveryDate, deliveryShift);
+    const deliveryValidation = validateDeliverySlot(
+      deliveryDate,
+      deliveryShift,
+    );
     if (!deliveryValidation.valid) {
       return res.status(400).json({
         success: false,
@@ -195,7 +203,7 @@ export const createOrder = async (req, res) => {
     let userPhone = "";
     if (req.user && req.user.userId) {
       const user = await import("../models/User.js").then((m) =>
-        m.default.findById(req.user.userId)
+        m.default.findById(req.user.userId),
       );
       if (user) {
         userName = user.name;
@@ -255,13 +263,13 @@ export const createOrder = async (req, res) => {
         await savedOrder.save();
 
         console.log(
-          `Order ${savedOrder.orderNumber} automatically assigned to delivery boy ${userAssignment.deliveryBoyId} based on user assignment`
+          `Order ${savedOrder.orderNumber} automatically assigned to delivery boy ${userAssignment.deliveryBoyId} based on user assignment`,
         );
       }
     } catch (assignmentError) {
       console.error(
         "Error auto-assigning order to delivery boy:",
-        assignmentError
+        assignmentError,
       );
       // Don't fail the order creation if auto-assignment fails
     }
@@ -271,7 +279,7 @@ export const createOrder = async (req, res) => {
     // Note: Stock is NOT deducted here - only when admin confirms the order
     // This prevents stock being locked for orders that might be cancelled
     console.log(
-      "Order created in pending status. Stock will be deducted upon admin confirmation."
+      "Order created in pending status. Stock will be deducted upon admin confirmation.",
     );
 
     // Clear user's cart if it exists
@@ -306,7 +314,7 @@ export const createOrder = async (req, res) => {
     // Handle validation errors more specifically
     if (error.name === "ValidationError") {
       const validationErrors = Object.values(error.errors).map(
-        (err) => err.message
+        (err) => err.message,
       );
       return res.status(400).json({
         success: false,
@@ -338,19 +346,16 @@ export const createOrder = async (req, res) => {
 export const getDeliverySlots = async (req, res) => {
   try {
     const currentDateTime = new Date().toISOString();
-    
-    console.log(`[${currentDateTime}] Getting available delivery slots`);
-    
     const availableSlots = getAvailableDeliverySlots();
-    
+
     // Transform the slots to match frontend expectations
-    const formattedSlots = availableSlots.map(slot => ({
+    const formattedSlots = availableSlots.map((slot) => ({
       date: slot.date,
       dateFormatted: getDateLabel(slot.date),
       shifts: {
         morning: {
           available: slot.morning.available,
-          timeRange: getDeliveryTimeSlot('morning'),
+          timeRange: getDeliveryTimeSlot("morning"),
           cutoffPassed: slot.morning.cutoffPassed,
           reason: slot.morning.reason,
         },
@@ -363,22 +368,23 @@ export const getDeliverySlots = async (req, res) => {
         // },
       },
     }));
-    
-    console.log(`[${currentDateTime}] Found ${formattedSlots.length} available slots`);
-    
+
+    console.log(
+      `[${currentDateTime}] Found ${formattedSlots.length} available slots`,
+    );
+
     res.status(200).json({
       success: true,
       message: "Available delivery slots retrieved",
       slots: formattedSlots,
       currentTime: currentDateTime,
     });
-    
   } catch (error) {
     console.error("Error getting available delivery slots:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: "Failed to get available delivery slots", 
-      error: error.message 
+      message: "Failed to get available delivery slots",
+      error: error.message,
     });
   }
 };
@@ -573,7 +579,7 @@ export const cancelOrder = async (req, res) => {
         await Product.findByIdAndUpdate(
           item.productId,
           { $inc: { stock: item.quantity } },
-          { new: true }
+          { new: true },
         );
       }
       console.log("Stock restored for cancelled confirmed order");
@@ -842,7 +848,7 @@ export const updateOrderStatus = async (req, res) => {
           await Product.findByIdAndUpdate(
             item.productId,
             { $inc: { stock: -item.quantity } },
-            { new: true }
+            { new: true },
           );
         }
         console.log("Stock deducted for confirmed order:", order.orderNumber);
@@ -854,13 +860,13 @@ export const updateOrderStatus = async (req, res) => {
           await Product.findByIdAndUpdate(
             item.productId,
             { $inc: { stock: item.quantity } },
-            { new: true }
+            { new: true },
           );
         }
         order.cancelledBy = "admin";
         console.log(
           "Stock restored for admin cancelled order:",
-          order.orderNumber
+          order.orderNumber,
         );
       }
     }
@@ -886,13 +892,13 @@ export const updateOrderStatus = async (req, res) => {
           order.deliveryBoyId = userAssignment.deliveryBoyId;
           order.assignedAt = new Date();
           console.log(
-            `Order ${order.orderNumber} automatically assigned to delivery boy ${userAssignment.deliveryBoyId} upon confirmation`
+            `Order ${order.orderNumber} automatically assigned to delivery boy ${userAssignment.deliveryBoyId} upon confirmation`,
           );
         }
       } catch (assignmentError) {
         console.error(
           "Error auto-assigning confirmed order to delivery boy:",
-          assignmentError
+          assignmentError,
         );
         // Don't fail the status update if auto-assignment fails
       }
@@ -901,7 +907,7 @@ export const updateOrderStatus = async (req, res) => {
     const updatedOrder = await order.save();
 
     console.log(
-      `Order ${order.orderNumber} status updated from '${order.status}' to '${status}' by admin`
+      `Order ${order.orderNumber} status updated from '${order.status}' to '${status}' by admin`,
     );
 
     res.status(200).json({
@@ -1226,7 +1232,7 @@ export const markOrderAsDelivered = async (req, res) => {
     await DeliveryBoy.findByIdAndUpdate(
       deliveryBoyId,
       { $inc: { totalDeliveries: 1 } },
-      { new: true }
+      { new: true },
     );
 
     res.status(200).json({
@@ -1429,7 +1435,7 @@ export const assignUserToDeliveryBoy = async (req, res) => {
     // Deactivate any existing active assignment for this user
     await UserDeliveryAssignment.updateMany(
       { userId, isActive: true },
-      { isActive: false }
+      { isActive: false },
     );
 
     // Create new assignment
@@ -1466,11 +1472,11 @@ export const assignUserToDeliveryBoy = async (req, res) => {
         {
           deliveryBoyId,
           assignedAt: new Date(),
-        }
+        },
       );
 
       console.log(
-        `Assigned ${ordersToAssign.length} orders to delivery boy ${deliveryBoyId} for user ${userId}`
+        `Assigned ${ordersToAssign.length} orders to delivery boy ${deliveryBoyId} for user ${userId}`,
       );
     }
 
@@ -1571,7 +1577,7 @@ export const getUserAssignments = async (req, res) => {
           isActive: assignment.isActive,
           orderCount,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -1623,11 +1629,11 @@ export const removeUserAssignment = async (req, res) => {
         { _id: { $in: ordersToUnassign.map((order) => order._id) } },
         {
           $unset: { deliveryBoyId: 1, assignedAt: 1 },
-        }
+        },
       );
 
       console.log(
-        `Unassigned ${ordersToUnassign.length} orders for user ${assignment.userId}`
+        `Unassigned ${ordersToUnassign.length} orders for user ${assignment.userId}`,
       );
     }
 
@@ -1707,7 +1713,7 @@ export const getUnassignedUsers = async (req, res) => {
           createdAt: user.createdAt,
           orderCount,
         };
-      })
+      }),
     );
 
     res.status(200).json({
@@ -1853,7 +1859,7 @@ export const reassignUserToDeliveryBoy = async (req, res) => {
           {
             deliveryBoyId: newDeliveryBoyId,
             assignedAt: new Date(),
-          }
+          },
         );
         ordersReassigned = ordersToReassign.length;
       }
@@ -1880,7 +1886,7 @@ export const reassignUserToDeliveryBoy = async (req, res) => {
           {
             deliveryBoyId: newDeliveryBoyId,
             assignedAt: new Date(),
-          }
+          },
         );
         ordersReassigned = ordersInRange.length;
       }
@@ -1905,7 +1911,7 @@ export const reassignUserToDeliveryBoy = async (req, res) => {
 
     // Populate assignment details for response
     const populatedAssignment = await UserDeliveryAssignment.findById(
-      createdAssignment._id
+      createdAssignment._id,
     ).populate([
       { path: "userId", select: "name phone email" },
       { path: "deliveryBoyId", select: "name phone shift" },
@@ -2038,7 +2044,7 @@ export const updateDeliverySequence = async (req, res) => {
     for (let i = 0; i < orderSequence.length; i++) {
       await Order.updateOne(
         { _id: orderSequence[i], deliveryBoyId },
-        { $set: { sequence: i + 1 } }
+        { $set: { sequence: i + 1 } },
       );
     }
     res
@@ -2102,7 +2108,7 @@ export const updateUserAssignmentSequence = async (req, res) => {
     for (let i = 0; i < assignmentOrder.length; i++) {
       await UserDeliveryAssignment.updateOne(
         { _id: assignmentOrder[i], deliveryBoyId },
-        { $set: { sequence: i + 1 } }
+        { $set: { sequence: i + 1 } },
       );
     }
     res
@@ -2188,7 +2194,7 @@ export const transferAllUsersToAnotherDeliveryBoy = async (req, res) => {
         {
           deliveryBoyId: toDeliveryBoyId,
           assignedAt: new Date(),
-        }
+        },
       );
       ordersUpdated += updated.modifiedCount || 0;
     }

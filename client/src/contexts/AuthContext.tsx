@@ -8,7 +8,7 @@ interface AuthContextType extends AuthState {
   signup: (
     name: string,
     email: string,
-    password: string
+    password: string,
   ) => Promise<{
     success: boolean;
     message?: string;
@@ -16,7 +16,7 @@ interface AuthContextType extends AuthState {
   }>;
   login: (
     email: string,
-    password: string
+    password: string,
   ) => Promise<{
     success: boolean;
     message?: string;
@@ -24,10 +24,10 @@ interface AuthContextType extends AuthState {
   }>;
   verifyEmail: (
     email: string,
-    code: string
+    code: string,
   ) => Promise<{ success: boolean; message?: string }>;
   resendCode: (
-    email: string
+    email: string,
   ) => Promise<{ success: boolean; message?: string }>;
 
   // Google authentication
@@ -47,11 +47,11 @@ interface AuthContextType extends AuthState {
   // Profile management
   updateProfile: (
     name: string,
-    phone?: string
+    phone?: string,
   ) => Promise<{ success: boolean; message?: string }>;
   changePassword: (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => Promise<{ success: boolean; message?: string }>;
 
   // Auth state management
@@ -76,7 +76,7 @@ const authReducer = (
     isGoogleAuthLoading: boolean;
     googleAuthError: string | null;
   },
-  action: AuthAction
+  action: AuthAction,
 ): AuthState & {
   isGoogleAuthLoading: boolean;
   googleAuthError: string | null;
@@ -207,7 +207,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const result = await ApiService.emailSignup(name, email, password);
       dispatch({ type: "SET_LOADING", payload: false });
       successToastHandler(
-        "Registration successful! Please check your email for verification."
+        "Registration successful! Please check your email for verification.",
       );
       return {
         success: result.success,
@@ -429,13 +429,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const changePassword = async (
     currentPassword: string,
-    newPassword: string
+    newPassword: string,
   ) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
       const result = await ApiService.changePassword(
         currentPassword,
-        newPassword
+        newPassword,
       );
       dispatch({ type: "SET_LOADING", payload: false });
       return { success: result.success, message: result.message };

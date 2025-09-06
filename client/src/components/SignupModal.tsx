@@ -1,20 +1,26 @@
-import React, { useState } from 'react';
-import { sendSignupOtp, signupUser } from '../utils/api';
+import React, { useState } from "react";
+import { ApiService } from "../services/api";
 
 interface SignupModalProps {
   open: boolean;
   onClose: () => void;
-  onSignupSuccess?: (user: any, tokens: any) => void;
+  onSignupSuccess?: () => void;
 }
 
-const SignupModal: React.FC<SignupModalProps> = ({ open, onClose, onSignupSuccess }) => {
-  const [form, setForm] = useState({ name: '', email: '', phone: '' });
-  const [error, setError] = useState('');
-  const [otpSent, setOtpSent] = useState(false);
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [sending, setSending] = useState(false);
+const SignupModal: React.FC<SignupModalProps> = ({
+  open,
+  onClose,
+  onSignupSuccess,
+}) => {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   if (!open) return null;
 
@@ -22,151 +28,152 @@ const SignupModal: React.FC<SignupModalProps> = ({ open, onClose, onSignupSucces
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSendOtp = async () => {
-    setError('');
-    setOtpError('');
-    if (!form.phone) {
-      setError('Please enter your phone number first');
-      return;
-    }
-    setSending(true);
-    try {
-      // Pass both phone and name, even if name is not used by backend
-      const res = await sendSignupOtp(form.phone, form.name);
-      if (res.success) {
-        setOtpSent(true);
-      } else {
-        setError(res.message || 'Failed to send OTP');
-      }
-    } catch (err) {
-      setError('Failed to send OTP');
-    }
-    setSending(false);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
-    setOtpError('');
-    if (!form.name || !form.email || !form.phone) {
-      setError('All fields are required');
+    setError("");
+
+    if (!form.name || !form.email || !form.password || !form.confirmPassword) {
+      setError("All fields are required");
       return;
     }
-    if (!otpSent) {
-      setError('Please send OTP to your phone number');
+
+    if (form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
-    if (!enteredOtp) {
-      setOtpError('Please enter the OTP');
+
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters");
       return;
     }
+
     setSubmitting(true);
     try {
-      const res = await signupUser({ ...form, otp: enteredOtp });
-      console.log('Signup response:', res); // Debug: log the full response
+      const res = await ApiService.emailSignup(
+        form.name,
+        form.email,
+        form.password,
+      );
       if (res.success) {
-        // Store tokens in localStorage for auto-login
-        if (res.data && res.data.tokens) {
-          localStorage.setItem('accessToken', res.data.tokens.accessToken);
-          localStorage.setItem('refreshToken', res.data.tokens.refreshToken);
-        }
+        setSuccess(true);
         if (onSignupSuccess) {
-          onSignupSuccess(res.data.user, res.data.tokens);
+          onSignupSuccess();
         }
-        onClose();
-      } else if (res.message && res.message.toLowerCase().includes('otp')) {
-        setOtpError(res.message);
+        setTimeout(() => {
+          onClose();
+        }, 2000);
       } else {
-        setError(res.message || 'Signup failed');
+        setError(res.message || "Signup failed");
       }
-    } catch (err) {
-      setError('Signup failed');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Signup failed";
+      setError(errorMessage);
     }
     setSubmitting(false);
   };
 
+  if (success) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg max-w-md w-full mx-4">
+          <div className="text-center">
+            <div className="text-green-600 text-6xl mb-4">✓</div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              Account Created!
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Please check your email for a verification link to activate your
+              account.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg w-full max-w-md p-6 relative">
-        <button
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 dark:hover:text-white"
-          onClick={onClose}
-        >
-          ×
-        </button>
-        <h2 className="text-2xl font-bold mb-4 text-center text-gray-900 dark:text-white">Sign Up</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white p-8 rounded-lg max-w-md w-full mx-4">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Sign Up</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Full Name
+            </label>
             <input
               type="text"
               name="name"
               value={form.name}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder="Your Name"
-              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter your full name"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Email Address
+            </label>
             <input
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder="you@example.com"
-              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter your email"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number</label>
-            <div className="flex gap-2">
-              <input
-                type="tel"
-                name="phone"
-                value={form.phone}
-                onChange={handleChange}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                placeholder="+919876543210"
-                pattern="^\+?[1-9]\d{1,14}$"
-                required
-              />
-              <button
-                type="button"
-                onClick={handleSendOtp}
-                disabled={sending || otpSent}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${otpSent ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-              >
-                {otpSent ? 'OTP Sent' : sending ? 'Sending...' : 'Send OTP'}
-              </button>
-            </div>
-            <div className="text-xs text-gray-500 mt-1">Please enter your phone number in international format, e.g. +919876543210</div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              value={form.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Enter your password"
+            />
           </div>
-          {otpSent && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Enter OTP</label>
-              <input
-                type="text"
-                name="otp"
-                value={enteredOtp}
-                onChange={e => setEnteredOtp(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white tracking-widest text-center"
-                placeholder="Enter OTP"
-                maxLength={6}
-                required
-              />
-              {otpError && <p className="text-red-500 text-sm mt-1">{otpError}</p>}
+
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              name="confirmPassword"
+              value={form.confirmPassword}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              placeholder="Confirm your password"
+            />
+          </div>
+
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
             </div>
           )}
-          {error && <p className="text-red-500 text-sm">{error}</p>}
+
           <button
             type="submit"
-            className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors"
             disabled={submitting}
+            className="w-full bg-emerald-600 text-white py-2 px-4 rounded-md hover:bg-emerald-700 disabled:opacity-50 font-medium"
           >
-            {submitting ? 'Signing Up...' : 'Sign Up'}
+            {submitting ? "Creating Account..." : "Create Account"}
           </button>
         </form>
       </div>
@@ -174,4 +181,4 @@ const SignupModal: React.FC<SignupModalProps> = ({ open, onClose, onSignupSucces
   );
 };
 
-export default SignupModal; 
+export default SignupModal;

@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 const cartSchema = new mongoose.Schema(
-
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -36,7 +35,6 @@ const cartSchema = new mongoose.Schema(
       type: Number,
       default: 0,
       min: [0, "Total amount cannot be negative"],
-
     },
     totalItems: {
       type: Number,
@@ -46,7 +44,7 @@ const cartSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 // Indexes for better performance
@@ -58,16 +56,16 @@ cartSchema.pre("save", function (next) {
   // Calculate total items
   this.totalItems = this.items.reduce(
     (total, item) => total + item.quantity,
-    0
+    0,
   );
-  
+
   // Calculate total amount (only for items with valid prices)
   this.totalAmount = this.items.reduce((total, item) => {
     const price = item.price || 0;
     const quantity = item.quantity || 0;
-    return total + (price * quantity);
+    return total + price * quantity;
   }, 0);
-  
+
   next();
 });
 

@@ -21,7 +21,7 @@ export const paymentConfig = {
   // UPI URL format
   generateUpiUrl: (upiId, name, amount, transactionRef, note = "") => {
     const upiUrl = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
-      name
+      name,
     )}&am=${amount}&tr=${transactionRef}&tn=${encodeURIComponent(note)}&cu=INR`;
     return upiUrl;
   },

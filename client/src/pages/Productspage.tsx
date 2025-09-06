@@ -58,7 +58,7 @@ export default function ProductsPage() {
           rating: 4.5,
           reviews: 0,
           unit: "piece",
-        })
+        }),
       );
       setProducts(transformedProducts);
     } catch (error) {
@@ -72,13 +72,13 @@ export default function ProductsPage() {
     let filtered = products;
     if (selectedCategory !== "all") {
       filtered = filtered.filter(
-        (product) => product.category === selectedCategory
+        (product) => product.category === selectedCategory,
       );
     }
     if (searchQuery.trim()) {
       const q = searchQuery.trim().toLowerCase();
       filtered = filtered.filter((product) =>
-        product.name.toLowerCase().includes(q)
+        product.name.toLowerCase().includes(q),
       );
     }
     filtered = [...filtered];
@@ -178,7 +178,7 @@ export default function ProductsPage() {
                           | "name"
                           | "price-low"
                           | "price-high"
-                          | "rating"
+                          | "rating",
                       )
                     }
                     className="py-3 pl-10 pr-8 text-gray-900 transition-all duration-300 bg-white border border-gray-200 rounded-lg appearance-none dark:bg-gray-800 dark:border-gray-700 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"

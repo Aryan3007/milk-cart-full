@@ -26,7 +26,7 @@ const deliveryBoyRouter = express.Router();
 deliveryBoyRouter.post(
   "/register",
   deliveryBoyRegisterLimiter,
-  registerDeliveryBoy
+  registerDeliveryBoy,
 );
 deliveryBoyRouter.post("/login", deliveryBoyLoginLimiter, loginDeliveryBoy);
 
@@ -34,17 +34,17 @@ deliveryBoyRouter.post("/login", deliveryBoyLoginLimiter, loginDeliveryBoy);
 deliveryBoyRouter.get(
   "/profile",
   isDeliveryBoyAuthenticated,
-  getDeliveryBoyProfile
+  getDeliveryBoyProfile,
 );
 deliveryBoyRouter.put(
   "/profile",
   isDeliveryBoyAuthenticated,
-  updateDeliveryBoyProfile
+  updateDeliveryBoyProfile,
 );
 deliveryBoyRouter.put(
   "/change-password",
   isDeliveryBoyAuthenticated,
-  changeDeliveryBoyPassword
+  changeDeliveryBoyPassword,
 );
 
 // Admin routes (require admin authentication)
@@ -52,17 +52,17 @@ deliveryBoyRouter.get("/", isAdminAuthenticated, getAllDeliveryBoys);
 deliveryBoyRouter.put(
   "/:deliveryBoyId/approve",
   isAdminAuthenticated,
-  approveDeliveryBoy
+  approveDeliveryBoy,
 );
 deliveryBoyRouter.put(
   "/:deliveryBoyId/reject",
   isAdminAuthenticated,
-  rejectDeliveryBoy
+  rejectDeliveryBoy,
 );
 deliveryBoyRouter.put(
   "/:deliveryBoyId/suspend",
   isAdminAuthenticated,
-  suspendDeliveryBoy
+  suspendDeliveryBoy,
 );
 
 export default deliveryBoyRouter;

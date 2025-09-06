@@ -24,7 +24,7 @@ paymentrouter.post("/create-session", isAuthenticated, createPaymentSession);
 paymentrouter.post(
   "/:paymentId/complete",
   isAuthenticated,
-  markPaymentCompleted
+  markPaymentCompleted,
 );
 paymentrouter.get("/:paymentId/status", isAuthenticated, getPaymentStatus);
 paymentrouter.get("/history", isAuthenticated, getPaymentHistory);
@@ -34,17 +34,17 @@ paymentrouter.get("/admin/all", isAdminAuthenticated, getAllPaymentsForAdmin);
 paymentrouter.get(
   "/admin/subscription",
   isAdminAuthenticated,
-  getAllSubscriptionPaymentsForAdmin
+  getAllSubscriptionPaymentsForAdmin,
 );
 paymentrouter.get(
   "/admin/:paymentId/details",
   isAdminAuthenticated,
-  getPaymentDetails
+  getPaymentDetails,
 );
 paymentrouter.post(
   "/admin/:paymentId/verify",
   isAdminAuthenticated,
-  verifyPayment
+  verifyPayment,
 );
 
 // Legacy route for backward compatibility

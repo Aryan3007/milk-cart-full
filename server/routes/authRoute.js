@@ -4,10 +4,12 @@ import {
   loginUser,
   registerUser,
   updateUserAddress,
+  deleteUserAddress,
   getAllUsers,
   verifyEmail,
   resendVerificationCode,
   googleAuth,
+  googleJWTAuth,
   testEmail,
   updateUserProfile,
   changePassword,
@@ -26,13 +28,14 @@ const authRouter = express.Router();
 authRouter.post("/register", authLimiter, registerUser);
 authRouter.post("/login", authLimiter, loginUser);
 authRouter.post("/google", authLimiter, googleAuth);
+authRouter.post("/google-jwt", authLimiter, googleJWTAuth);
 
 // Email verification routes (with rate limiting)
 authRouter.post("/verify-email", verificationLimiter, verifyEmail);
 authRouter.post(
   "/resend-verification-code",
   verificationLimiter,
-  resendVerificationCode
+  resendVerificationCode,
 );
 authRouter.post("/admin-login", adminLogin);
 
@@ -43,17 +46,18 @@ authRouter.get("/getalluser", getAllUsers);
 authRouter.get(
   "/user/:userId/details",
   // isAuthenticated,
-  getUserDetails
+  getUserDetails,
 );
 authRouter.get(
   "/user/:userId/export",
   // isAuthenticated,
-  exportUserData
+  exportUserData,
 );
 authRouter.put("/profile", isAuthenticated, updateUserProfile);
 authRouter.put("/change-password", isAuthenticated, changePassword);
 authRouter.put("/user/:userId/address", isAuthenticated, updateUserAddress);
 authRouter.post("/user/:userId/address", isAuthenticated, updateUserAddress);
+authRouter.delete("/user/:userId/address", isAuthenticated, deleteUserAddress);
 
 // Development/Testing routes
 authRouter.post("/test-email", testEmail);

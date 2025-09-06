@@ -22,7 +22,7 @@ try {
 
     if (payment.subscriptionId) {
       const subscription = await UserSubscription.findById(
-        payment.subscriptionId
+        payment.subscriptionId,
       );
       if (subscription) {
         console.log("\nSubscription found:");

@@ -526,7 +526,7 @@ export const addOrUpdateRating = async (req, res) => {
 
     // Check if user has already rated the product
     const existingRating = product.ratings.find(
-      (rate) => rate.userId && rate.userId.toString() === user._id.toString()
+      (rate) => rate.userId && rate.userId.toString() === user._id.toString(),
     );
 
     if (existingRating) {
@@ -541,7 +541,7 @@ export const addOrUpdateRating = async (req, res) => {
     // Recalculate average rating and total reviews
     const totalRatings = product.ratings.reduce(
       (acc, curr) => acc + curr.rating,
-      0
+      0,
     );
     product.averageRating = totalRatings / product.ratings.length;
     product.totalReviews = product.ratings.length;
@@ -594,7 +594,7 @@ export const updateStock = async (req, res) => {
     const product = await Product.findByIdAndUpdate(
       id,
       { stock: parseInt(stock, 10) },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
 
     if (!product) {
@@ -619,31 +619,33 @@ export const getAllProductsForAdmin = async (req, res) => {
       limit = 10,
       sortBy = "createdAt",
       sortOrder = "desc",
-      search = '',
+      search = "",
     } = req.query;
 
     // Calculate skip value for pagination
     const skip = (page - 1) * limit;
-    
+
     // Build search query
     let searchQuery = {};
     // Add search filter
     if (search && search.trim()) {
-      const searchRegex = new RegExp(search.trim(), 'i');
-      
+      const searchRegex = new RegExp(search.trim(), "i");
+
       // First, try to find categories that match the search term
-      const matchingCategories = await categorySchema.find({ name: searchRegex }).select('_id');
-      const categoryIds = matchingCategories.map(cat => cat._id);
-      
+      const matchingCategories = await categorySchema
+        .find({ name: searchRegex })
+        .select("_id");
+      const categoryIds = matchingCategories.map((cat) => cat._id);
+
       const searchConditions = [
         { name: searchRegex },
         { description: searchRegex },
         { brand: searchRegex },
         { unit: searchRegex },
         { sku: searchRegex },
-        ...(categoryIds.length > 0 ? [{ category: { $in: categoryIds } }] : [])
+        ...(categoryIds.length > 0 ? [{ category: { $in: categoryIds } }] : []),
       ];
-      
+
       searchQuery.$or = searchConditions;
     }
 
@@ -689,8 +691,8 @@ export const getAllProductsForAdmin = async (req, res) => {
         totalProducts,
         productsPerPage: Number(limit),
         hasNextPage: Number(page) < totalPages,
-        hasPrevPage: Number(page) > 1
-      }
+        hasPrevPage: Number(page) > 1,
+      },
     });
   } catch (error) {
     console.error("Error fetching products for admin:", error);

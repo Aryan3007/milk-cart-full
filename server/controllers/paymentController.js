@@ -24,7 +24,7 @@ export const getUnpaidOrders = async (req, res) => {
     // Calculate total amount
     const totalAmount = unpaidOrders.reduce(
       (sum, order) => sum + order.totalAmount,
-      0
+      0,
     );
 
     // Group orders by confirmation/delivery date for better UI
@@ -107,7 +107,7 @@ export const createPaymentSession = async (req, res) => {
     // Calculate total amount
     const totalAmount = orders.reduce(
       (sum, order) => sum + order.totalAmount,
-      0
+      0,
     );
 
     if (totalAmount <= 0) {
@@ -127,7 +127,7 @@ export const createPaymentSession = async (req, res) => {
       paymentConfig.adminUpiName,
       totalAmount,
       referenceNumber,
-      `Payment for ${orders.length} milk orders`
+      `Payment for ${orders.length} milk orders`,
     );
 
     // Generate QR code
@@ -167,7 +167,7 @@ export const createPaymentSession = async (req, res) => {
           paymentSessionId: paymentId,
           paymentSessionCreatedAt: new Date(),
         },
-      }
+      },
     );
 
     res.status(201).json({
@@ -232,7 +232,8 @@ export const markPaymentCompleted = async (req, res) => {
     const now = new Date();
     const sessionCreated = new Date(payment.createdAt);
     const expiryTime = new Date(
-      sessionCreated.getTime() + paymentConfig.paymentTimeoutMinutes * 60 * 1000
+      sessionCreated.getTime() +
+        paymentConfig.paymentTimeoutMinutes * 60 * 1000,
     );
 
     if (now > expiryTime) {
@@ -259,7 +260,7 @@ export const markPaymentCompleted = async (req, res) => {
           paymentCompletedAt: new Date(),
           upiTransactionId: upiTransactionId,
         },
-      }
+      },
     );
 
     res.status(200).json({
@@ -474,7 +475,7 @@ export const getAllPaymentsForAdmin = async (req, res) => {
           foreignField: "_id",
           as: "orderIds",
         },
-      }
+      },
     );
 
     // Count total for pagination
@@ -607,7 +608,7 @@ export const getAllSubscriptionPaymentsForAdmin = async (req, res) => {
           foreignField: "_id",
           as: "orderIds",
         },
-      }
+      },
     );
 
     // Count total for pagination
@@ -685,7 +686,7 @@ export const verifyPayment = async (req, res) => {
             paymentVerifiedAt: new Date(),
             paymentVerifiedBy: adminId,
           },
-        }
+        },
       );
 
       res.status(200).json({
@@ -713,7 +714,7 @@ export const verifyPayment = async (req, res) => {
             paymentRejectedAt: new Date(),
             paymentRejectedBy: adminId,
           },
-        }
+        },
       );
 
       res.status(200).json({
@@ -767,7 +768,7 @@ export const getPaymentDetails = async (req, res) => {
           try {
             const DeliveryBoy = mongoose.model("DeliveryBoy");
             const deliveryBoy = await DeliveryBoy.findById(
-              order.deliveryBoyId
+              order.deliveryBoyId,
             ).select("name phone");
             if (deliveryBoy) {
               order.deliveryBoyId = deliveryBoy;

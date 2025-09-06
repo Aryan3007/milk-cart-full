@@ -1,6 +1,6 @@
-import { ShoppingCart } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { useCart } from '../contexts/CartContext';
+import { ShoppingCart } from "lucide-react";
+import { motion } from "framer-motion";
+import { useCart } from "../contexts/CartContext";
 
 interface CartIconProps {
   onClick: () => void;
@@ -23,7 +23,7 @@ export default function CartIcon({ onClick }: CartIconProps) {
           animate={{ scale: 1 }}
           className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold"
         >
-          {itemCount > 99 ? '99+' : itemCount}
+          {itemCount > 99 ? "99+" : itemCount}
         </motion.span>
       )}
     </motion.button>

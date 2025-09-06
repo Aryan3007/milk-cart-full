@@ -38,10 +38,10 @@ const runSeeding = async () => {
     console.log("\n📝 Next steps:");
     console.log("1. Start your backend server: npm start");
     console.log(
-      "2. Access subscription plans via API: GET /api/v1/subscription/plans"
+      "2. Access subscription plans via API: GET /api/v1/subscription/plans",
     );
     console.log(
-      "3. Admin can manage plans via: /api/v1/subscription/admin/plans"
+      "3. Admin can manage plans via: /api/v1/subscription/admin/plans",
     );
 
     process.exit(0);

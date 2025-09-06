@@ -1,18 +1,18 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle, Package, Home, Phone } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import AnimatedSection from '../components/AnimatedSection';
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
+import { CheckCircle, Package, Home, Phone } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import AnimatedSection from "../components/AnimatedSection";
 
 export default function OrderSuccessPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const orderId = searchParams.get('orderId');
+  const orderId = searchParams.get("orderId");
 
   // Redirect if no order ID
   useEffect(() => {
     if (!orderId) {
-      navigate('/');
+      navigate("/");
     }
   }, [orderId, navigate]);
 
@@ -22,7 +22,6 @@ export default function OrderSuccessPage() {
       behavior: "smooth",
     });
   }, []);
-
 
   if (!orderId) {
     return null;
@@ -50,7 +49,10 @@ export default function OrderSuccessPage() {
           </p>
 
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-8">
-            Order ID: <span className="font-mono font-bold text-blue-600 dark:text-blue-400">#{orderId}</span>
+            Order ID:{" "}
+            <span className="font-mono font-bold text-blue-600 dark:text-blue-400">
+              #{orderId}
+            </span>
           </p>
         </AnimatedSection>
 
@@ -61,7 +63,9 @@ export default function OrderSuccessPage() {
                 <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto">
                   <Package className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Order Confirmed</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  Order Confirmed
+                </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Your order has been received and is being processed
                 </p>
@@ -71,12 +75,18 @@ export default function OrderSuccessPage() {
                 <div className="w-16 h-16 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center mx-auto">
                   <motion.div
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   >
                     🚚
                   </motion.div>
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Preparing for Delivery</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  Preparing for Delivery
+                </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Your fresh dairy products are being prepared
                 </p>
@@ -86,7 +96,9 @@ export default function OrderSuccessPage() {
                 <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto">
                   <Home className="w-8 h-8 text-green-600 dark:text-green-400" />
                 </div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Delivery Tomorrow</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  Delivery Tomorrow
+                </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Expected delivery by tomorrow morning
                 </p>
@@ -106,7 +118,8 @@ export default function OrderSuccessPage() {
                   Need Help?
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-3">
-                  Our customer support team is here to help you with any questions about your order.
+                  Our customer support team is here to help you with any
+                  questions about your order.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <span className="text-blue-600 dark:text-blue-400 font-medium">
@@ -124,7 +137,7 @@ export default function OrderSuccessPage() {
         <AnimatedSection delay={0.8}>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <motion.button
-              onClick={() => navigate('/orders')}
+              onClick={() => navigate("/orders")}
               className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -133,7 +146,7 @@ export default function OrderSuccessPage() {
             </motion.button>
 
             <motion.button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 px-8 py-3 rounded-lg font-semibold transition-colors"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

@@ -52,7 +52,6 @@ export const addItemToCart = async (req, res) => {
     // Check if the user already has a cart
     let cart = await Cart.findOne({ userId: req.user.userId }); // Ensure the use of userId in the query
 
-
     if (!cart) {
       // If no cart exists for the user, create a new cart
       cart = new Cart({
@@ -68,7 +67,7 @@ export const addItemToCart = async (req, res) => {
     } else {
       // If cart exists, check if the product is already in the cart
       const existingItem = cart.items.find(
-        (item) => item.productId.toString() === productId
+        (item) => item.productId.toString() === productId,
       );
 
       if (existingItem) {
@@ -102,7 +101,7 @@ export const addItemToCart = async (req, res) => {
         });
       }
     }
-console.log(cart);
+    console.log(cart);
 
     // Save the updated cart
     await cart.save();
@@ -136,7 +135,7 @@ export const getCart = async (req, res) => {
     // Find the cart using userId
     const cart = await Cart.findOne({ userId: req.user.userId }).populate(
       "items.productId",
-      "name images brand price discountPrice stock isActive status"
+      "name images brand price discountPrice stock isActive status",
     );
 
     if (!cart) {
@@ -157,7 +156,7 @@ export const getCart = async (req, res) => {
       (item) =>
         item.productId &&
         item.productId.isActive &&
-        item.productId.status === "active"
+        item.productId.status === "active",
     );
 
     // Update cart if some items were invalid
